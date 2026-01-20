@@ -97,6 +97,22 @@ def edit_track(request, public_id: str):
 
 
 @login_required
+@require_POST
+def delete_track(request, public_id: str):
+    track = get_object_or_404(GatedTrack, public_id=public_id, owner=request.user)
+    # Delete file from storage first (Django does not always remove it automatically).
+    try:
+        if track.download_file:
+            track.download_file.delete(save=False)
+    except Exception:
+        # Best-effort; still delete DB row.
+        pass
+    track.delete()
+    messages.success(request, "Gate deleted.")
+    return redirect("gates:my_tracks")
+
+
+@login_required
 def create_track(request):
     if request.method == "POST":
         form = GatedTrackCreateForm(request.POST, request.FILES)

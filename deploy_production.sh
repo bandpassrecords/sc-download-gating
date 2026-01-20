@@ -659,6 +659,12 @@ server {
         add_header Cache-Control "public, immutable";
     }
 
+    # Prevent direct access to gated uploads.
+    # Downloads must go through the Django gate endpoint.
+    location ^~ /media/gated_downloads/ {
+        return 404;
+    }
+
     location /media/ {
         alias $PROJECT_DIR/media/;
         expires 30d;

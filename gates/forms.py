@@ -1,6 +1,20 @@
+import os
+
 from django import forms
 
 from .models import GatedTrack
+
+
+def _safe_upload_basename(upload_name: str) -> str:
+    """
+    Preserve the uploaded filename as-is (spaces/parentheses included),
+    while stripping any path components for safety.
+    """
+    name = (upload_name or "").strip()
+    # Browsers typically send basename only, but be defensive against paths.
+    name = name.replace("\\", "/").split("/")[-1]
+    name = os.path.basename(name)
+    return name
 
 
 class GatedTrackCreateForm(forms.ModelForm):
@@ -27,6 +41,18 @@ class GatedTrackCreateForm(forms.ModelForm):
         if "soundcloud.com" not in url.lower():
             raise forms.ValidationError("Please enter a valid SoundCloud track URL.")
         return url
+
+    def save(self, commit=True):
+        instance: GatedTrack = super().save(commit=False)
+        # If the user didn't define a custom download filename, preserve the original upload name.
+        if not (instance.download_filename or "").strip():
+            f = self.cleaned_data.get("download_file")
+            if f is not None and getattr(f, "name", None):
+                instance.download_filename = _safe_upload_basename(f.name)[:255]
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
 
 
 class GatedTrackUpdateForm(forms.ModelForm):
@@ -60,4 +86,17 @@ class GatedTrackUpdateForm(forms.ModelForm):
         if self.instance and getattr(self.instance, "download_file", None):
             return self.instance.download_file
         return f
+
+    def save(self, commit=True):
+        instance: GatedTrack = super().save(commit=False)
+        # If a new file was uploaded and the user didn't set a custom name, preserve original upload name.
+        if "download_file" in getattr(self, "files", {}):
+            if not (instance.download_filename or "").strip():
+                f = self.cleaned_data.get("download_file")
+                if f is not None and getattr(f, "name", None):
+                    instance.download_filename = _safe_upload_basename(f.name)[:255]
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
 

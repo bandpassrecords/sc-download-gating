@@ -90,8 +90,8 @@ class MacroUploadForm(forms.Form):
         
         if file:
             # Check file size (10MB limit)
-            if file.size > 10 * 1024 * 1024:
-                raise ValidationError("File size cannot exceed 10MB.")
+            if file.size > 250 * 1024 * 1024:
+                raise ValidationError("File size cannot exceed 250MB.")
             
             # Check file extension
             if not file.name.lower().endswith('.xml'):
