@@ -86,6 +86,7 @@
           <div class="col-12">
             <label class="form-label">{{ form.additional_follow_profiles.label }}</label>
             {{ form.additional_follow_profiles }}
+            <div id="followProfilesList"></div>
             <div class="form-text">{{ form.additional_follow_profiles.help_text }}</div>
             {% for e in form.additional_follow_profiles.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
           </div>
@@ -125,5 +126,61 @@
     </form>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const mount = document.getElementById("followProfilesList");
+  if (!mount) return;
+
+  const initial = [
+    {% for t in track.follow_targets.all %}
+      "{{ t.profile_url|default:''|escapejs }}",
+    {% endfor %}
+  ].filter(Boolean);
+
+  function row(value) {
+    const div = document.createElement("div");
+    div.className = "input-group mb-2";
+    div.innerHTML = `
+      <span class="input-group-text bg-dark border-dark"><i class="fas fa-user-plus text-muted"></i></span>
+      <input type="url" name="additional_follow_profiles" class="form-control bg-dark border-dark text-light" placeholder="https://soundcloud.com/artist" value="${(value || "").replace(/"/g, "&quot;")}">
+      <button class="btn btn-outline-secondary bg-dark border-dark text-muted btn-remove" type="button" title="Remove"><i class="fas fa-trash"></i></button>
+      <button class="btn btn-outline-primary bg-dark border-dark text-primary btn-add" type="button" title="Add"><i class="fas fa-plus"></i></button>
+    `;
+    return div;
+  }
+
+  function syncButtons() {
+    const rows = Array.from(mount.querySelectorAll(".input-group"));
+    rows.forEach((r, idx) => {
+      const remove = r.querySelector(".btn-remove");
+      const add = r.querySelector(".btn-add");
+      if (remove) remove.disabled = rows.length <= 1;
+      if (add) add.style.display = (idx === rows.length - 1) ? "" : "none";
+    });
+  }
+
+  function addRow(value) {
+    const r = row(value || "");
+    mount.appendChild(r);
+    r.querySelector(".btn-remove")?.addEventListener("click", () => {
+      r.remove();
+      syncButtons();
+    });
+    r.querySelector(".btn-add")?.addEventListener("click", () => {
+      addRow("");
+    });
+    syncButtons();
+  }
+
+  if (initial.length) {
+    initial.forEach(addRow);
+  } else {
+    addRow("");
+  }
+})();
+</script>
 {% endblock %}
 

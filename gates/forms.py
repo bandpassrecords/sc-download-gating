@@ -18,10 +18,31 @@ def _safe_upload_basename(upload_name: str) -> str:
     return name
 
 
+_INPUT_CLASS = "form-control bg-dark border-dark text-light"
+_TEXTAREA_CLASS = "form-control bg-dark border-dark text-light"
+_CHECKBOX_CLASS = "form-check-input bg-dark border-dark"
+
+
+def _apply_bootstrap_dark_classes(form: forms.Form):
+    for name, field in form.fields.items():
+        widget = field.widget
+        # Booleans
+        if isinstance(widget, (forms.CheckboxInput,)):
+            widget.attrs["class"] = _CHECKBOX_CLASS
+            continue
+        # Textareas
+        if isinstance(widget, forms.Textarea):
+            widget.attrs["class"] = _TEXTAREA_CLASS
+            continue
+        # Everything else (text/url/file/etc)
+        widget.attrs["class"] = _INPUT_CLASS
+
+
 class GatedTrackCreateForm(forms.ModelForm):
+    # Rendered manually as a dynamic list of inputs (see templates).
     additional_follow_profiles = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "One SoundCloud profile URL per line…"}),
+        widget=forms.HiddenInput(),
         help_text="Optional: require following additional SoundCloud profiles (collabs).",
         label="Additional profiles to follow (optional)",
     )
@@ -43,6 +64,10 @@ class GatedTrackCreateForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 4}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_bootstrap_dark_classes(self)
+
     def clean_soundcloud_track_url(self):
         url = (self.cleaned_data.get("soundcloud_track_url") or "").strip()
         if "soundcloud.com" not in url.lower():
@@ -58,13 +83,23 @@ class GatedTrackCreateForm(forms.ModelForm):
         return instance
 
     def _sync_follow_targets(self, track: GatedTrack):
-        raw = (self.cleaned_data.get("additional_follow_profiles") or "").strip()
-        urls = [u.strip() for u in raw.splitlines() if u.strip()]
+        urls = [u.strip() for u in self.data.getlist("additional_follow_profiles") if u.strip()]
+        if not urls:
+            raw = (self.cleaned_data.get("additional_follow_profiles") or "").strip()
+            urls = [u.strip() for u in raw.splitlines() if u.strip()]
 
         # Replace targets (simple + predictable)
         track.follow_targets.all().delete()
 
-        for url in urls[:25]:
+        seen = set()
+        cleaned = []
+        for url in urls:
+            if url in seen:
+                continue
+            seen.add(url)
+            cleaned.append(url)
+
+        for url in cleaned[:25]:
             urn = ""
             username = ""
             if is_configured():
@@ -83,9 +118,10 @@ class GatedTrackCreateForm(forms.ModelForm):
 
 
 class GatedTrackUpdateForm(forms.ModelForm):
+    # Rendered manually as a dynamic list of inputs (see templates).
     additional_follow_profiles = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "One SoundCloud profile URL per line…"}),
+        widget=forms.HiddenInput(),
         help_text="Optional: require following additional SoundCloud profiles (collabs).",
         label="Additional profiles to follow (optional)",
     )
@@ -108,10 +144,7 @@ class GatedTrackUpdateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance and self.instance.pk:
-            existing = self.instance.follow_targets.all()
-            urls = [t.profile_url for t in existing if t.profile_url]
-            self.fields["additional_follow_profiles"].initial = "\n".join(urls)
+        _apply_bootstrap_dark_classes(self)
 
     def save(self, commit=True):
         instance: GatedTrack = super().save(commit=False)
@@ -122,12 +155,22 @@ class GatedTrackUpdateForm(forms.ModelForm):
         return instance
 
     def _sync_follow_targets(self, track: GatedTrack):
-        raw = (self.cleaned_data.get("additional_follow_profiles") or "").strip()
-        urls = [u.strip() for u in raw.splitlines() if u.strip()]
+        urls = [u.strip() for u in self.data.getlist("additional_follow_profiles") if u.strip()]
+        if not urls:
+            raw = (self.cleaned_data.get("additional_follow_profiles") or "").strip()
+            urls = [u.strip() for u in raw.splitlines() if u.strip()]
 
         track.follow_targets.all().delete()
 
-        for url in urls[:25]:
+        seen = set()
+        cleaned = []
+        for url in urls:
+            if url in seen:
+                continue
+            seen.add(url)
+            cleaned.append(url)
+
+        for url in cleaned[:25]:
             urn = ""
             username = ""
             if is_configured():
