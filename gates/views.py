@@ -3,7 +3,9 @@ from typing import Optional
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
+from django.core.mail import send_mail
 from django.db.models import F
 from django.http import FileResponse, Http404
 from django.http import JsonResponse
@@ -930,6 +932,42 @@ def download(request, public_id: str):
 
     if not track.download_file:
         raise Http404("File not found")
+
+    # Notify gate owner (best-effort; never block the download).
+    try:
+        owner_email = (getattr(track.owner, "email", "") or "").strip()
+        if owner_email:
+            who = (getattr(access, "soundcloud_username", "") or "").strip() or user_urn
+            gate_url = request.build_absolute_uri(reverse("gates:gate", kwargs={"public_id": track.public_id}))
+            when = timezone.now().strftime("%Y-%m-%d %H:%M:%S %Z")
+            ip = _get_client_ip(request) or ""
+            ua = (request.META.get("HTTP_USER_AGENT", "") or "")[:500]
+
+            subject = f"New download: {track.title or track.public_id}"
+            message = "\n".join(
+                [
+                    "A new gated download was completed.",
+                    "",
+                    f"Gate: {track.title or '(untitled)'}",
+                    f"Public ID: {track.public_id}",
+                    f"Gate URL: {gate_url}",
+                    "",
+                    f"Downloaded by: {who}",
+                    f"IP: {ip}",
+                    f"User-Agent: {ua}",
+                    f"When: {when}",
+                ]
+            )
+
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                recipient_list=[owner_email],
+                fail_silently=False,
+            )
+    except Exception:
+        pass
 
     # Clear SoundCloud access token after download (we only need it for verification + actions).
     for k in ("soundcloud_access_token", "soundcloud_expires_at"):
