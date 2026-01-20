@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Popular Macros - DAW Macros Hub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">
+                <i class="fas fa-fire"></i> Popular Macros
+            </h1>
+            <p class="text-muted mb-0">
+                Discover the most loved macros by the community
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'macros:macro_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-search"></i> Browse All Macros
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filter Options -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row align-items-end">
+                <div class="col-md-3">
+                    <label for="timeframe" class="form-label">Time Period</label>
+                    <select name="timeframe" id="timeframe" class="form-select" onchange="this.form.submit()">
+                        <option value="all" {% if request.GET.timeframe == 'all' %}selected{% endif %}>All Time</option>
+                        <option value="week" {% if request.GET.timeframe == 'week' %}selected{% endif %}>This Week</option>
+                        <option value="month" {% if request.GET.timeframe == 'month' %}selected{% endif %}>This Month</option>
+                        <option value="year" {% if request.GET.timeframe == 'year' %}selected{% endif %}>This Year</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="cubase_version" class="form-label">Version</label>
+                    <select name="cubase_version" id="cubase_version" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Versions</option>
+                        {% for version in cubase_versions %}
+                        <option value="{{ version.id }}" {% if request.GET.cubase_version == version.id|stringformat:"s" %}selected{% endif %}>
+                            {{ version.version }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="sort_by" class="form-label">Sort By</label>
+                    <select name="sort_by" id="sort_by" class="form-select" onchange="this.form.submit()">
+                        <option value="rating" {% if request.GET.sort_by == 'rating' %}selected{% endif %}>Highest Rated</option>
+                        <option value="downloads" {% if request.GET.sort_by == 'downloads' %}selected{% endif %}>Most Downloaded</option>
+                        <option value="views" {% if request.GET.sort_by == 'views' %}selected{% endif %}>Most Viewed</option>
+                        <option value="favorites" {% if request.GET.sort_by == 'favorites' %}selected{% endif %}>Most Favorited</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if page_obj %}
+    <!-- Popular Macros Grid -->
+    <div class="row">
+        {% for macro in page_obj %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card macro-card h-100 {% if forloop.counter <= 3 %}border-color{% endif %}">
+                {% if forloop.counter <= 3 %}
+                <div class="card-header bg-secondary text-dark text-center">
+                    <strong>
+                        {% if forloop.counter == 1 %}
+                            <i class="fas fa-trophy"></i> #1 Most Popular
+                        {% elif forloop.counter == 2 %}
+                            <i class="fas fa-medal"></i> #2 Most Popular
+                        {% else %}
+                            <i class="fas fa-award"></i> #3 Most Popular
+                        {% endif %}
+                    </strong>
+                </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <!-- Macro Title -->
+                    <h6 class="card-title mb-2">
+                        <a href="{% url 'macros:macro_detail' macro.id %}" class="text-decoration-none">
+                            {{ macro.name|truncatechars:50 }}
+                        </a>
+                    </h6>
+                    
+                    <!-- Author -->
+                    <div class="mb-2">
+                        
+                        <small class="text-muted ms-2">
+                            by {% if macro.user.username == 'deleted_account' or macro.user.email == 'deleted@system.local' %}
+                                {{ macro.user.profile.display_name }}
+                            {% elif macro.user.profile.public_id %}
+                                <a href="{% url 'accounts:public_profile' macro.user.profile.public_id %}" class="text-decoration-none">
+                                    {{ macro.user.profile.display_name }}
+                                </a>
+                            {% else %}
+                                Unknown User
+                            {% endif %}
+                        </small>
+                    </div>
+                    
+                    <!-- Key Binding -->
+                    {% if macro.key_binding %}
+                    <div class="mb-2">
+                        <span class="key-binding">
+                            <i class="fas fa-keyboard"></i> {{ macro.key_binding }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Description -->
+                    {% if macro.description %}
+                    <p class="card-text text-muted small text-truncate-2">
+                        {{ macro.description }}
+                    </p>
+                    {% endif %}
+                    
+                    <!-- Rating -->
+                    {% if macro.avg_rating %}
+                    <div class="mb-2">
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= macro.avg_rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <small class="text-muted ms-1">({{ macro.total_votes }} rating{{ macro.total_votes|pluralize }})</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Cubase Version -->
+                    {% if macro.cubase_version %}
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-compact-disc"></i> {{ macro.cubase_version.version }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Card Footer with Stats -->
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex gap-3">
+                            <small class="text-muted">
+                                <i class="fas fa-download"></i> {{ macro.download_count }}
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-heart"></i> {{ macro.favorite_count|default:0 }}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-sm btn-outline-danger btn-favorite" data-macro-id="{{ macro.id }}">
+                            <i class="far fa-heart"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success btn-add-to-cart" data-macro-id="{{ macro.id }}">
+                            <i class="fas fa-cart-plus"></i> Add
+                        </button>
+                        {% endif %}
+                        
+                        <a href="{% url 'macros:macro_detail' macro.id %}" class="btn btn-sm btn-primary flex-fill">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Popular macros pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <!-- No Popular Macros -->
+    <div class="text-center py-5">
+        <i class="fas fa-fire fa-4x text-muted mb-4"></i>
+        <h3>No popular macros found</h3>
+        <p class="text-muted mb-4">Try adjusting your filters or check back later for trending content.</p>
+        
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+            <a href="{% url 'macros:macro_list' %}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Browse All Macros
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'macros:upload_keycommands' %}" class="btn btn-outline-primary">
+                <i class="fas fa-upload"></i> Upload Your Macros
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize favorite buttons and add to cart
+document.addEventListener('DOMContentLoaded', function() {
+    const favoriteButtons = document.querySelectorAll('.btn-favorite');
+    favoriteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const macroId = this.dataset.macroId;
+            if (window.toggleFavorite) {
+                window.toggleFavorite(macroId, this);
+            }
+        });
+    });
+    
+    // Initialize add to cart buttons
+    const addToCartButtons = document.querySelectorAll('.btn-add-to-cart');
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const macroId = this.dataset.macroId;
+            const originalText = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            fetch(`/macros/cart/add/${macroId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.innerHTML = '<i class="fas fa-check"></i> Added';
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-outline-success');
+                    if (window.updateCartBadge) {
+                        window.updateCartBadge(data.cart_count);
+                    }
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.classList.remove('btn-outline-success');
+                        this.classList.add('btn-success');
+                        this.disabled = false;
+                    }, 2000);
+                } else {
+                    if (window.showToast) {
+                        showToast(data.message, 'error');
+                    }
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (window.showToast) {
+                    showToast('An error occurred. Please try again.', 'error');
+                }
+                this.innerHTML = originalText;
+                this.disabled = false;
+            });
+        });
+    });
+});
+</script>
+{% endblock %} 

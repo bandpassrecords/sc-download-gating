@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Create Gate{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 860px;">
+  <h2 class="mb-2">Create a SoundCloud gated download</h2>
+  <p class="text-muted mb-4">Upload a file, paste your SoundCloud track link, and require a like/comment before download.</p>
+
+  <form method="post" enctype="multipart/form-data" class="card">
+    <div class="card-body">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Title</label>
+          {{ form.title }}
+          {% for e in form.title.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Description (optional)</label>
+          {{ form.description }}
+          {% for e in form.description.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">SoundCloud track URL</label>
+          {{ form.soundcloud_track_url }}
+          {% for e in form.soundcloud_track_url.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">File to download</label>
+          {{ form.download_file }}
+          {% for e in form.download_file.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Download filename (optional)</label>
+          {{ form.download_filename }}
+          <div class="form-text">If blank, we’ll use the uploaded filename.</div>
+          {% for e in form.download_filename.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-check">
+            {{ form.require_like }}
+            <label class="form-check-label">Require like</label>
+          </div>
+          {% for e in form.require_like.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-check">
+            {{ form.require_comment }}
+            <label class="form-check-label">Require comment</label>
+          </div>
+          {% for e in form.require_comment.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-check">
+            {{ form.is_listed }}
+            <label class="form-check-label">List publicly on browse page</label>
+          </div>
+          {% for e in form.is_listed.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-check">
+            {{ form.is_active }}
+            <label class="form-check-label">Active</label>
+          </div>
+          {% for e in form.is_active.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="card-footer d-flex justify-content-end gap-2">
+      <a class="btn btn-outline-secondary" href="{% url 'gates:my_tracks' %}">Cancel</a>
+      <button class="btn btn-primary" type="submit">Create gate</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+

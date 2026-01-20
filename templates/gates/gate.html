@@ -1,0 +1,124 @@
+{% extends "gates/base_gate.html" %}
+
+{% block title %}{{ track.title|default:"Download" }}{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 980px;">
+  <div class="row g-4">
+    <div class="col-12">
+      <h2 class="mb-2">{{ track.title|default:"Download" }}</h2>
+      {% if track.description %}<p class="text-muted">{{ track.description }}</p>{% endif %}
+    </div>
+
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="ratio ratio-16x9">
+            <iframe
+              title="SoundCloud player"
+              scrolling="no"
+              frameborder="no"
+              allow="autoplay"
+              src="https://w.soundcloud.com/player/?url={{ track.soundcloud_track_url|urlencode }}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true">
+            </iframe>
+          </div>
+        </div>
+      </div>
+      <div class="small text-muted mt-2">
+        <a href="{{ track.soundcloud_track_url }}" target="_blank" rel="noopener">Open on SoundCloud</a>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="mb-3">Unlock steps</h5>
+
+          {% if not soundcloud_configured %}
+            <div class="alert alert-warning mb-3">
+              This site is not configured with SoundCloud OAuth yet. Downloads can’t be verified until the admin adds the OAuth client + secret.
+            </div>
+          {% endif %}
+
+          <ul class="list-group mb-4">
+            {% if track.require_like %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-heart me-2"></i>Like the track</span>
+                {% if liked_ok %}<span class="badge bg-success">Verified</span>{% else %}<span class="badge bg-secondary">Not verified</span>{% endif %}
+              </li>
+            {% endif %}
+            {% if track.require_comment %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-comment me-2"></i>Comment on the track</span>
+                {% if commented_ok %}<span class="badge bg-success">Verified</span>{% else %}<span class="badge bg-secondary">Not verified</span>{% endif %}
+              </li>
+            {% endif %}
+          </ul>
+
+          {% if soundcloud_user_urn and soundcloud_has_token and not can_download %}
+            <div class="row g-3 mb-4">
+              {% if track.require_like and not liked_ok %}
+                <div class="col-12 col-md-6">
+                  <form method="post" action="{% url 'gates:soundcloud_like' track.public_id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger w-100">
+                      <i class="fas fa-heart"></i> Like from this page
+                    </button>
+                  </form>
+                  <div class="small text-muted mt-2">
+                    If this fails, use <a href="{{ track.soundcloud_track_url }}" target="_blank" rel="noopener">SoundCloud</a>.
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if track.require_comment and not commented_ok %}
+                <div class="col-12 col-md-6">
+                  <form method="post" action="{% url 'gates:soundcloud_comment' track.public_id %}">
+                    {% csrf_token %}
+                    <label class="form-label small text-muted mb-1">Comment</label>
+                    <textarea name="comment_body" class="form-control mb-2" rows="2" maxlength="2000" placeholder="Write a quick comment…"></textarea>
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                      <i class="fas fa-comment"></i> Post comment from this page
+                    </button>
+                  </form>
+                </div>
+              {% endif %}
+            </div>
+          {% elif soundcloud_user_urn and not soundcloud_has_token and not can_download %}
+            <div class="alert alert-info mb-4">
+              Your SoundCloud session expired. Please connect again to like/comment from this page.
+            </div>
+          {% endif %}
+
+          <div class="d-flex flex-wrap gap-2">
+            {% if can_download %}
+              <a class="btn btn-primary" href="{% url 'gates:download' track.public_id %}">
+                <i class="fas fa-download"></i> Download
+              </a>
+            {% else %}
+              {% if not soundcloud_user_urn or not soundcloud_has_token %}
+                <a class="btn btn-primary {% if not soundcloud_configured %}disabled{% endif %}" href="{% url 'gates:soundcloud_connect' track.public_id %}">
+                  <i class="fas fa-link"></i> Connect SoundCloud
+                </a>
+              {% endif %}
+            {% endif %}
+
+            {% if soundcloud_user_urn %}
+              <span class="align-self-center small text-muted">
+                Connected as: {{ soundcloud_username|default:soundcloud_user_urn }}
+              </span>
+            {% endif %}
+          </div>
+
+          {% if not can_download %}
+            <div class="small text-muted mt-3">
+              Tip: You can like/comment using the buttons above (or on SoundCloud), then refresh this page.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

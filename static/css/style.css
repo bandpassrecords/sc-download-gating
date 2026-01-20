@@ -1,0 +1,886 @@
+/* ============================================================================
+   DAW Macros Hub - Modern Dark Theme
+   ============================================================================ */
+
+/* Global Styles - Dark Theme */
+:root {
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --info-color: #06b6d4;
+    
+    /* Dark Theme Colors */
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-card: #1e293b;
+    --bg-card-hover: #334155;
+    --bg-input: #1e293b;
+    --bg-navbar: #1e293b;
+    
+    /* Text Colors */
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-inverse: #0f172a;
+    
+    /* Borders */
+    --border-color: #334155;
+    --border-hover: #475569;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+    
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-title: 'Goldman', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    padding-top: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+    background-color: var(--bg-primary);
+}
+
+/* ============================================================================
+   Navigation Styles - Dark Theme
+   ============================================================================ */
+
+.navbar {
+    background: var(--bg-navbar) !important;
+    box-shadow: var(--shadow-md);
+    padding: 0.75rem 0;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--primary-color) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navbar-brand span {
+    font-family: var(--font-title);
+}
+
+.navbar-brand i {
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    color: var(--text-secondary) !important;
+    padding: 0.5rem 1rem !important;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--primary-color) !important;
+    background-color: var(--bg-tertiary);
+}
+
+.navbar-nav .nav-link.active {
+    color: var(--primary-color) !important;
+    font-weight: 600;
+    background-color: var(--bg-tertiary);
+}
+
+.navbar-nav .nav-link i {
+    font-size: 0.9rem;
+}
+
+/* Mobile Navbar - Ensure proper colors when collapsed */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background: var(--bg-navbar) !important;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    }
+    
+    .navbar-nav .nav-link {
+        color: var(--text-secondary) !important;
+    }
+    
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link:focus {
+        color: var(--primary-color) !important;
+        background-color: var(--bg-tertiary) !important;
+    }
+    
+    .navbar-nav .nav-link.active {
+        color: var(--primary-color) !important;
+        background-color: var(--bg-tertiary) !important;
+    }
+    
+    .navbar-toggler {
+        border-color: var(--border-color);
+    }
+    
+    .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(203, 213, 225, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+}
+
+/* Dropdown Menu - Dark Theme */
+.dropdown-menu {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-lg);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: background-color 0.2s ease;
+    color: var(--text-secondary) !important;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+.dropdown-item i {
+    width: 1.25rem;
+    text-align: center;
+}
+
+/* ============================================================================
+   Hero Section - Dark Theme
+   ============================================================================ */
+
+.hero-section {
+    background: var(--primary-color);
+    color: white;
+    padding: 6rem 0 4rem;
+    margin-top: -76px;
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.hero-title span {
+    color: white;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    font-weight: 400;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+    line-height: 1.6;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.hero-actions .btn {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: box-shadow 0.2s ease;
+}
+
+.hero-actions .btn:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ============================================================================
+   Card Styles - Dark Theme
+   ============================================================================ */
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-md);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    overflow: hidden;
+    color: var(--text-primary);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-hover);
+}
+
+.card-header {
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    padding: 1.25rem 1.5rem;
+    color: var(--text-primary);
+}
+
+.card-body {
+    padding: 1.5rem;
+    background: var(--bg-card);
+}
+
+.card-footer {
+    background: var(--bg-tertiary);
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+}
+
+/* Macro Card - Equal Height */
+.macro-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.macro-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.macro-card .card-body .macro-title {
+    flex-shrink: 0;
+}
+
+.macro-card .card-body .d-flex {
+    margin-top: auto;
+}
+
+.macro-card .card-footer {
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
+/* ============================================================================
+   Button Styles - Dark Theme
+   ============================================================================ */
+
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-lg {
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.btn-light {
+    background: white;
+    color: var(--text-inverse);
+    border-color: white;
+}
+
+.btn-light:hover {
+    background: #f1f5f9;
+    border-color: #f1f5f9;
+}
+
+.btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+    color: white;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* ============================================================================
+   Footer Styles - Dark Theme
+   ============================================================================ */
+
+footer {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    padding: 3rem 0 1.5rem;
+    margin-top: 4rem;
+    border-top: 1px solid var(--border-color);
+}
+
+footer h5, footer h6 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+footer a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--text-primary);
+}
+
+footer .list-unstyled {
+    margin: 0;
+    padding: 0;
+}
+
+footer .list-unstyled li {
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================================================
+   Form Styles - Dark Theme
+   ============================================================================ */
+
+.form-control, .form-select {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--bg-input);
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================================================
+   Checkbox Styles - Dark Theme
+   ============================================================================ */
+
+.form-check-input {
+    width: 1.25em;
+    height: 1.25em;
+    margin-top: 0.25em;
+    vertical-align: top;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 0.25em;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.form-check-input:focus {
+    border-color: var(--primary-color);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+}
+
+.form-check-input:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.form-check-label {
+    cursor: pointer;
+    margin-left: 0.5rem;
+    color: var(--text-secondary);
+}
+
+/* ============================================================================
+   Alert Styles - Dark Theme
+   ============================================================================ */
+
+.alert {
+    border-radius: 0.5rem;
+    border: none;
+    padding: 1rem 1.5rem;
+    color: #e0e0e0 !important;
+}
+
+.alert * {
+    color: #e0e0e0 !important;
+}
+
+.alert-info {
+    background-color: rgba(207, 207, 207, 0.151);
+    color: #e0e0e0 !important;
+    border-left: 4px solid var(--info-color);
+}
+
+.alert-success {
+    background-color: rgba(126, 126, 126, 0.1);
+    color: #e0e0e0 !important;
+    border-left: 4px solid var(--success-color);
+}
+
+.alert-danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #e0e0e0 !important;
+    border-left: 4px solid var(--danger-color);
+}
+
+.alert-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #e0e0e0 !important;
+    border-left: 4px solid var(--warning-color);
+}
+
+.alert i {
+    margin-right: 0.5rem;
+    color: #e0e0e0 !important;
+}
+
+.alert span {
+    color: #e0e0e0 !important;
+}
+
+/* ============================================================================
+   Badge Styles - Dark Theme
+   ============================================================================ */
+
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    border-radius: 0.375rem;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.bg-secondary {
+    background-color: var(--secondary-color) !important;
+}
+
+.bg-success {
+    background-color: var(--success-color) !important;
+}
+
+.bg-danger {
+    background-color: var(--danger-color) !important;
+}
+
+.bg-warning {
+    background-color: var(--warning-color) !important;
+}
+
+.bg-info {
+    background-color: var(--info-color) !important;
+}
+
+/* ============================================================================
+   Utility Classes - Dark Theme
+   ============================================================================ */
+
+.shadow-lg {
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.bg-light {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-success {
+    color: var(--success-color) !important;
+}
+
+.text-warning {
+    color: var(--warning-color) !important;
+}
+
+.text-info {
+    color: var(--info-color) !important;
+}
+
+.text-danger {
+    color: var(--danger-color) !important;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Loading spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3em;
+    border-color: var(--primary-color);
+    border-right-color: transparent;
+}
+
+/* ============================================================================
+   Responsive Styles
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .hero-actions {
+        flex-direction: column;
+    }
+    
+    .hero-actions .btn {
+        width: 100%;
+    }
+    
+    .navbar-nav .nav-link {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .navbar-nav .nav-link span {
+        display: inline;
+    }
+    
+    .navbar-nav .nav-link i {
+        font-size: 0.9rem;
+        margin-right: 0.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        padding: 4rem 0 3rem;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* ============================================================================
+   Animation Styles
+   ============================================================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* ============================================================================
+   File Upload Styling - Modern Drag and Drop (Dark Theme)
+   ============================================================================ */
+
+.file-upload-area {
+    position: relative;
+    width: 100%;
+}
+
+.file-upload-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* Hide the default file input */
+.file-input-hidden {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+}
+
+/* Modern file upload label/button - Dark Theme */
+.file-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 200px;
+    padding: 3rem 2rem;
+    border: 3px dashed var(--border-color);
+    border-radius: 1rem;
+    background: var(--bg-card);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+}
+
+.file-upload-label:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-tertiary);
+    border-style: solid;
+    box-shadow: var(--shadow-md);
+}
+
+.file-upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.file-upload-content i {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+    font-size: 3rem !important;
+}
+
+.file-upload-text {
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.file-upload-text strong {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.file-upload-hint {
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    margin-top: 0.5rem;
+    font-weight: 400;
+}
+
+/* Show selected file name */
+.file-upload-label.has-file {
+    border-color: var(--success-color);
+    background: var(--bg-tertiary);
+    border-style: solid;
+    box-shadow: var(--shadow-md);
+}
+
+.file-upload-label.has-file .file-upload-content i {
+    color: var(--success-color);
+    font-size: 3rem !important;
+}
+
+.file-upload-label.has-file .file-upload-text {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Drag and Drop Overlay - Covers entire card */
+.upload-page-card {
+    position: relative;
+    transition: box-shadow 0.3s ease;
+}
+
+.upload-page-card:hover {
+    transform: none !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.drag-drop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.95);
+    border: 4px dashed var(--primary-color);
+    border-radius: 0.75rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+}
+
+.drag-drop-overlay.active {
+    display: flex;
+    pointer-events: all;
+}
+
+.drag-drop-content {
+    text-align: center;
+    color: white;
+    padding: 2rem;
+}
+
+.drag-drop-content i {
+    color: white;
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    display: block;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+.drag-drop-content h4 {
+    color: white;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.drag-drop-content p {
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+
+@media print {
+    .navbar,
+    footer,
+    .btn,
+    .alert {
+        display: none !important;
+    }
+    
+    body {
+        padding-top: 0 !important;
+        background: white !important;
+        color: black !important;
+    }
+}

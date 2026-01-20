@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload & Download - DAW Macros Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg upload-page-card" id="upload-card">
+                <div class="drag-drop-overlay" id="drag-drop-overlay">
+                    <div class="drag-drop-content">
+                        <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                        <h4>Drop your file here</h4>
+                        <p>Release to upload your Key Commands.xml file</p>
+                    </div>
+                </div>
+                <div class="card-header text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-download"></i> Upload & Download
+                    </h3>
+                    <p class="mb-0 mt-2">We'll embed {{ cart_count }} selected macro{{ cart_count|pluralize }} into your file</p>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-info-circle fa-lg me-3 mt-1"></i>
+                            <div>
+                                <strong>How it works:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Upload your existing <strong>Key Commands.xml</strong> file</li>
+                                    <li>We'll embed the {{ cart_count }} selected macro{{ cart_count|pluralize }} into your file</li>
+                                    <li>Download the modified file with your macros included</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Selected Macros Summary -->
+                    <div class="mb-4">
+                        <h5><i class="fas fa-list"></i> Selected Macros ({{ cart_count }})</h5>
+                        <div class="list-group">
+                            {% for macro in selected_macros %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ macro.name }}</strong>
+                                    </div>
+                                    <small class="text-muted">by {{ macro.user.profile.display_name }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data" id="upload-form">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="user_file" class="form-label">
+                                <i class="fas fa-file-upload"></i> Your Key Commands.xml File *
+                            </label>
+                            <div class="file-upload-area" id="file-upload-area">
+                                <div class="file-upload-wrapper">
+                                    <input type="file" name="user_file" id="user_file" accept=".xml" class="file-input-hidden" required>
+                                    <label for="user_file" class="file-upload-label">
+                                        <div class="file-upload-content">
+                                            <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                                            <div class="file-upload-text">
+                                                <strong>Click to browse</strong> or drag and drop
+                                            </div>
+                                            <div class="file-upload-hint">
+                                                Your Key Commands.xml file
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <a href="{% url 'macros:view_cart' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Cart
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg" id="upload-btn">
+                                <i class="fas fa-download"></i> Upload & Download
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('upload-form');
+    const uploadBtn = document.getElementById('upload-btn');
+    const fileInput = document.getElementById('user_file');
+    const fileUploadArea = document.getElementById('file-upload-area');
+    const uploadCard = document.getElementById('upload-card');
+    const dragDropOverlay = document.getElementById('drag-drop-overlay');
+    
+    let dragCounter = 0;
+    
+    // Prevent default drag behaviors on the entire page
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    // Drag and Drop handlers - cover entire card
+    if (uploadCard && dragDropOverlay) {
+        // Show overlay when dragging enters the card
+        uploadCard.addEventListener('dragenter', function(e) {
+            dragCounter++;
+            if (dragCounter === 1) {
+                dragDropOverlay.classList.add('active');
+            }
+        }, false);
+        
+        // Hide overlay when dragging leaves the card
+        uploadCard.addEventListener('dragleave', function(e) {
+            dragCounter--;
+            if (dragCounter === 0) {
+                dragDropOverlay.classList.remove('active');
+            }
+        }, false);
+        
+        // Keep overlay visible while dragging over the card
+        uploadCard.addEventListener('dragover', function(e) {
+            if (dragCounter > 0) {
+                dragDropOverlay.classList.add('active');
+            }
+        }, false);
+        
+        // Handle dropped files anywhere on the card
+        uploadCard.addEventListener('drop', function(e) {
+            dragCounter = 0;
+            dragDropOverlay.classList.remove('active');
+            
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelected();
+            }
+        }, false);
+    }
+    
+    // Function to update file label
+    function updateFileLabel(file) {
+        const fileUploadLabel = document.querySelector('.file-upload-label');
+        if (fileUploadLabel && file) {
+            fileUploadLabel.classList.add('has-file');
+            const fileUploadText = fileUploadLabel.querySelector('.file-upload-text');
+            if (fileUploadText) {
+                fileUploadText.innerHTML = `<strong>Selected:</strong> ${file.name}`;
+            }
+        }
+    }
+    
+    // Function to reset file label
+    function resetFileLabel() {
+        const fileUploadLabel = document.querySelector('.file-upload-label');
+        if (fileUploadLabel) {
+            fileUploadLabel.classList.remove('has-file');
+            const fileUploadText = fileUploadLabel.querySelector('.file-upload-text');
+            if (fileUploadText) {
+                fileUploadText.innerHTML = `<strong>Click to browse</strong> or drag and drop`;
+            }
+        }
+    }
+    
+    // Handle file selection via browse button
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                handleFileSelected();
+            }
+        });
+    }
+    
+    // Function to handle file selection
+    function handleFileSelected() {
+        const file = fileInput.files[0];
+        
+        if (!file) return;
+        
+        // Validate file type first
+        if (!file.name.toLowerCase().endsWith('.xml')) {
+            if (window.showToast) {
+                showToast('Please select an XML file.', 'warning');
+            }
+            fileInput.value = '';
+            resetFileLabel();
+            return;
+        }
+        
+        // Validate file size
+        if (file.size > 250 * 1024 * 1024) {
+            if (window.showToast) {
+                showToast('File size must be less than 250MB.', 'warning');
+            }
+            fileInput.value = '';
+            resetFileLabel();
+            return;
+        }
+        
+        // Only update label if file is valid
+        updateFileLabel(file);
+    }
+    
+    // Form submission handler - intercept and handle via AJAX
+    if (form && uploadBtn) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!fileInput.files.length) {
+                if (window.showToast) {
+                    showToast('Please select your Key Commands.xml file.', 'warning');
+                }
+                return;
+            }
+            
+            // Disable button and show loading state
+            uploadBtn.disabled = true;
+            const originalBtnText = uploadBtn.innerHTML;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            // Create FormData
+            const formData = new FormData(form);
+            
+            // Submit via fetch
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                // Check if download was successful (XML file)
+                if (response.headers.get('X-Download-Success') === 'true') {
+                    // Get the blob
+                    return response.blob().then(blob => {
+                        // Create download link
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'Key Commands.xml';
+                        link.style.display = 'none';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                        
+                        // Wait for user to save the file before redirecting
+                        let redirectTimeout;
+                        let hasRedirected = false;
+                        const orderHistoryUrl = '{% url "macros:order_history" %}';
+                        
+                        // Function to redirect (only once)
+                        function doRedirect() {
+                            if (!hasRedirected) {
+                                hasRedirected = true;
+                                if (redirectTimeout) {
+                                    clearTimeout(redirectTimeout);
+                                }
+                                window.location.href = orderHistoryUrl;
+                            }
+                        }
+                        
+                        // Method 1: Wait for window focus (user came back after saving)
+                        let focusHandler = function() {
+                            // Wait a bit after focus to ensure file was saved
+                            redirectTimeout = setTimeout(doRedirect, 1000);
+                            window.removeEventListener('focus', focusHandler);
+                        };
+                        window.addEventListener('focus', focusHandler);
+                        
+                        // Method 2: Wait for visibility change (user switched back to tab)
+                        let visibilityHandler = function() {
+                            if (!document.hidden) {
+                                redirectTimeout = setTimeout(doRedirect, 1000);
+                                document.removeEventListener('visibilitychange', visibilityHandler);
+                            }
+                        };
+                        document.addEventListener('visibilitychange', visibilityHandler);
+                        
+                        // Method 3: Fallback - redirect after reasonable delay (5 seconds)
+                        // This ensures redirect happens even if focus/visibility events don't fire
+                        redirectTimeout = setTimeout(doRedirect, 5000);
+                    });
+                } else {
+                    // Handle redirects or errors - check if response is a redirect
+                    if (response.redirected || response.status === 302 || response.status === 301) {
+                        // Follow redirect
+                        window.location.href = response.url;
+                    } else {
+                        // Try to get error message
+                        return response.text().then(html => {
+                            // Reload page to show error messages
+                            window.location.reload();
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = originalBtnText;
+                if (window.showToast) {
+                    showToast('An error occurred. Please try again.', 'error');
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
+

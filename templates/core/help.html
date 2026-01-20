@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Help & FAQ - DAW Macros Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>Help & Frequently Asked Questions
+                    </h1>
+                    <p class="mb-0 mt-2 opacity-75">Find answers to common questions and learn how to get the most out of DAW Macros Hub</p>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <!-- Quick Start -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">
+                            <i class="fas fa-rocket me-2 text-primary"></i>Quick Start Guide
+                        </h2>
+                        
+                        <div class="accordion" id="quickStartAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        <i class="fas fa-user-plus me-2"></i>1. Creating an Account
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#quickStartAccordion">
+                                    <div class="accordion-body">
+                                        <p>To get started, you'll need to create a free account:</p>
+                                        <ol>
+                                            <li>Click the <strong>"Sign up"</strong> or <strong>"Join Free"</strong> button</li>
+                                            <li>Fill in your username, email, and password</li>
+                                            <li>Verify your email address (check your inbox)</li>
+                                            <li>Log in and start exploring!</li>
+                                        </ol>
+                                        <p class="mb-0">
+                                            <a href="{% url 'accounts:signup' %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-user-plus me-1"></i>Create Account Now
+                                            </a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTwo">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        <i class="fas fa-upload me-2"></i>2. Uploading Your Macros
+                                    </button>
+                                </h2>
+                                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#quickStartAccordion">
+                                    <div class="accordion-body">
+                                        <p>To upload your Cubase macros:</p>
+                                        <ol>
+                                            <li>In Cubase, go to <strong>File → Preferences → Key Commands</strong></li>
+                                            <li>Click <strong>"Export"</strong> to save your Key Commands.xml file</li>
+                                            <li>On our site, go to <strong>"Upload Macros"</strong> in the navigation menu</li>
+                                            <li>Select your Key Commands.xml file</li>
+                                            <li>Our system will automatically parse all your macros</li>
+                                            <li>Choose which macros to share (public or private)</li>
+                                            <li>Add descriptions and tags to help others find them</li>
+                                        </ol>
+                                        <p class="mb-0">
+                                            <strong>Note:</strong> The file is typically located at:<br>
+                                            <code>%AppData%\Roaming\Steinberg\Cubase [Version]\Key Commands.xml</code>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingThree">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        <i class="fas fa-download me-2"></i>3. Downloading Macros
+                                    </button>
+                                </h2>
+                                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#quickStartAccordion">
+                                    <div class="accordion-body">
+                                        <p>To download and use macros from the community:</p>
+                                        <ol>
+                                            <li>Browse or search for macros that interest you</li>
+                                            <li>Click on a macro to see details, ratings, and reviews</li>
+                                            <li>Add macros to your cart (you can select multiple)</li>
+                                            <li>Go to your cart and click <strong>"Download Selected Macros"</strong></li>
+                                            <li>You'll receive a new Key Commands.xml file with your selected macros</li>
+                                            <li>In Cubase, go to <strong>File → Preferences → Key Commands</strong></li>
+                                            <li>Click <strong>"Import"</strong> and select the downloaded file</li>
+                                        </ol>
+                                        <p class="mb-0">
+                                            <strong>Important:</strong> Always backup your current Key Commands.xml before importing!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- FAQ Section -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">
+                            <i class="fas fa-question me-2 text-primary"></i>Frequently Asked Questions
+                        </h2>
+                        
+                        <div class="accordion" id="faqAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq1">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1Collapse" aria-expanded="false" aria-controls="faq1Collapse">
+                                        What is a macro in Cubase?
+                                    </button>
+                                </h2>
+                                <div id="faq1Collapse" class="accordion-collapse collapse" aria-labelledby="faq1" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        A macro in Cubase is a keyboard shortcut or key command that performs a specific action. 
+                                        Macros can be simple (like pressing Ctrl+S to save) or complex (combining multiple actions 
+                                        into a single keypress). They help speed up your workflow by reducing repetitive tasks.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq2">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2Collapse" aria-expanded="false" aria-controls="faq2Collapse">
+                                        Will downloading macros overwrite my existing key commands?
+                                    </button>
+                                </h2>
+                                <div id="faq2Collapse" class="accordion-collapse collapse" aria-labelledby="faq2" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        The downloaded file contains only the macros you selected. When you import it into Cubase, 
+                                        it will add or update those specific macros. However, we <strong>strongly recommend</strong> 
+                                        backing up your current Key Commands.xml file before importing, just to be safe.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq3">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3Collapse" aria-expanded="false" aria-controls="faq3Collapse">
+                                        What's the difference between public and private macros?
+                                    </button>
+                                </h2>
+                                <div id="faq3Collapse" class="accordion-collapse collapse" aria-labelledby="faq3" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <strong>Public macros</strong> are visible to everyone and can be discovered, rated, and downloaded 
+                                        by other users. <strong>Private macros</strong> are only visible to you and won't appear in search 
+                                        results or public listings. You can change this setting at any time.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq4">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4Collapse" aria-expanded="false" aria-controls="faq4Collapse">
+                                        Do macros work across different Cubase versions?
+                                    </button>
+                                </h2>
+                                <div id="faq4Collapse" class="accordion-collapse collapse" aria-labelledby="faq4" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Most macros are compatible across Cubase versions, but some commands may have changed between versions. 
+                                        We allow you to filter macros by Cubase version to find ones that are known to work with your specific 
+                                        version. Always test macros after importing to ensure they work as expected.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq5">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5Collapse" aria-expanded="false" aria-controls="faq5Collapse">
+                                        How do I rate or review a macro?
+                                    </button>
+                                </h2>
+                                <div id="faq5Collapse" class="accordion-collapse collapse" aria-labelledby="faq5" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        To rate a macro, go to the macro's detail page and use the star rating system. You can also leave 
+                                        a written review to help other users understand how the macro works and whether it's useful. 
+                                        Your ratings help the community find the best macros!
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq6">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6Collapse" aria-expanded="false" aria-controls="faq6Collapse">
+                                        Can I edit or delete my uploaded macros?
+                                    </button>
+                                </h2>
+                                <div id="faq6Collapse" class="accordion-collapse collapse" aria-labelledby="faq6" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Yes! You can edit the description, tags, and privacy settings of your macros at any time. 
+                                        Go to "My Macros" in your profile to manage all your uploaded macros. You can also delete 
+                                        macros if you no longer want to share them.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq7">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq7Collapse" aria-expanded="false" aria-controls="faq7Collapse">
+                                        What file format do I need to upload?
+                                    </button>
+                                </h2>
+                                <div id="faq7Collapse" class="accordion-collapse collapse" aria-labelledby="faq7" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <p>You need to upload the <strong>Key Commands.xml</strong> file from Cubase. This file contains 
+                                        all your keyboard shortcuts and macros.</p>
+                                        
+                                        <p class="mb-3"><strong>How to Find your Macros file (Key Commands.xml):</strong></p>
+                                        
+                                        <!-- Windows Instructions -->
+                                        <div class="mb-4">
+                                            <h6 class="mb-2">
+                                                <i class="fab fa-windows me-2"></i>Windows:
+                                            </h6>
+                                            <ol class="mb-0">
+                                                <li>Open the <strong>Run</strong> dialog (press <kbd>Windows + R</kbd>)</li>
+                                                <li>Type <code>%appdata%\Steinberg</code> and press Enter</li>
+                                                <li>Look for your Cubase folder (e.g., <code>Cubase 15_64</code> or <code>Cubase 14_64</code> depending on your Cubase version)</li>
+                                                <li>Open the folder and locate the <strong>Key Commands.xml</strong> file</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <!-- Mac Instructions -->
+                                        <div>
+                                            <h6 class="mb-2">
+                                                <i class="fab fa-apple me-2"></i>Mac:
+                                            </h6>
+                                            <ol class="mb-0">
+                                                <li>In the <strong>Finder</strong>, choose <strong>Go > Go to Folder</strong></li>
+                                                <li>Paste the following: <code>~/Library/Preferences/</code> and press Enter</li>
+                                                <li>Look for your Cubase folder (e.g., <code>Cubase15</code> or <code>Cubase14</code> depending on your Cubase version)</li>
+                                                <li>Inside you will find the <strong>Key Commands.xml</strong> file</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="faq8">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq8Collapse" aria-expanded="false" aria-controls="faq8Collapse">
+                                        Is my data secure?
+                                    </button>
+                                </h2>
+                                <div id="faq8Collapse" class="accordion-collapse collapse" aria-labelledby="faq8" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Yes, we take security seriously. Your password is encrypted, and we only store the macro 
+                                        information you choose to share. Private macros are only visible to you. For more details, 
+                                        please see our <a href="{% url 'core:privacy_policy' %}" class="text-decoration-none">Privacy Policy</a>.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Troubleshooting Section -->
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">
+                            <i class="fas fa-tools me-2 text-primary"></i>Troubleshooting
+                        </h2>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100 border">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>Upload Issues
+                                        </h5>
+                                        <ul class="mb-0">
+                                            <li>Make sure you're uploading a valid Key Commands.xml file</li>
+                                            <li>Check that the file isn't corrupted</li>
+                                            <li>Ensure the file is exported from Cubase correctly</li>
+                                            <li>Try exporting the file again from Cubase</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100 border">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-download text-info me-2"></i>Import Issues
+                                        </h5>
+                                        <ul class="mb-0">
+                                            <li>Backup your current Key Commands.xml first</li>
+                                            <li>Make sure you're using the correct Cubase version</li>
+                                            <li>Restart Cubase after importing</li>
+                                            <li>Check for conflicting key bindings</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100 border">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-user text-success me-2"></i>Account Issues
+                                        </h5>
+                                        <ul class="mb-0">
+                                            <li>Check your email spam folder for verification emails</li>
+                                            <li>Use the password reset feature if you forgot your password</li>
+                                            <li>Make sure cookies are enabled in your browser</li>
+                                            <li>Try clearing your browser cache</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100 border">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-search text-primary me-2"></i>Search Issues
+                                        </h5>
+                                        <ul class="mb-0">
+                                            <li>Try different keywords or search terms</li>
+                                            <li>Use the filter options to narrow results</li>
+                                            <li>Check spelling of your search terms</li>
+                                            <li>Browse by category or Cubase version</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Still Need Help Section -->
+                    <section class="mb-0">
+                        <div class="alert alert-primary">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-life-ring me-2"></i>Still Need Help?
+                            </h5>
+                            <p class="mb-2">
+                                If you can't find the answer you're looking for, we're here to help!
+                            </p>
+                            <a href="{% url 'core:contact' %}" class="btn btn-primary">
+                                <i class="fas fa-envelope me-2"></i>Contact Support
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .accordion-button {
+        font-weight: 500;
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+    }
+    
+    .accordion-body {
+        line-height: 1.8;
+    }
+    
+    .accordion-body ol {
+        padding-left: 1.5rem;
+    }
+    
+    .accordion-body ol li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .accordion-body code {
+        background-color: #f8f9fa;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+        font-size: 0.9em;
+        color: #d63384;
+    }
+    
+    .card.border {
+        border-color: #dee2e6 !important;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .card-body ul {
+        padding-left: 1.25rem;
+    }
+    
+    .card-body ul li {
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+

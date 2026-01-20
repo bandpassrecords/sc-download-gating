@@ -1,0 +1,1 @@
+please add an option to the both upload and download to remove the Key binding for  a given macro... this means the xml needs a bit of treatment when the user decides to remove the key binding

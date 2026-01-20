@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verification Email Sent - DAW Macros Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-envelope fa-4x text-primary"></i>
+                    </div>
+                    <h2 class="mb-3">Check Your Email</h2>
+                    <p class="lead">
+                        We've sent a verification link to your email address.
+                    </p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Please check your inbox</strong> and click the verification link to activate your account.
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-clock"></i>
+                        <strong>Important:</strong> The verification link expires in <strong>10 minutes</strong>.
+                    </div>
+                    <p class="text-muted">
+                        Didn't receive the email? Check your spam folder or 
+                        <a href="{% url 'accounts:signup_email' %}">try signing up again</a>.
+                    </p>
+                    <hr class="my-4">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Go to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

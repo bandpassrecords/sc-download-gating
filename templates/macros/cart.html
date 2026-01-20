@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Cart - DAW Macros Hub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">
+                    <i class="fas fa-shopping-cart"></i> My Cart
+                </h1>
+                {% if cart_count > 0 %}
+                <div>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#clearCartModal">
+                        <i class="fas fa-trash"></i> Clear Cart
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if cart_count == 0 %}
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-shopping-cart fa-4x text-muted mb-4"></i>
+                    <h3>Your cart is empty</h3>
+                    <p class="text-muted mb-4">Start browsing macros and add them to your cart!</p>
+                    <a href="{% url 'macros:macro_list' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search"></i> Browse Macros
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>You have {{ cart_count }} macro{{ cart_count|pluralize }} in your cart.</strong>
+                Review your selection below, then upload your Key Commands.xml file to download them all at once.
+            </div>
+            
+            <!-- Macros -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        {% for macro in macros %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <a href="{% url 'macros:macro_detail' macro.id %}" class="text-decoration-none">
+                                            {{ macro.name|truncatechars:40 }}
+                                        </a>
+                                    </h6>
+                                    
+                                    {% if macro.key_binding %}
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-keyboard"></i> {{ macro.key_binding }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if macro.description %}
+                                    <p class="card-text text-muted small" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        {{ macro.description }}
+                                    </p>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            by {% if macro.user.username == 'deleted_account' or macro.user.email == 'deleted@system.local' %}
+                                                {{ macro.user.profile.display_name }}
+                                            {% else %}
+                                                <a href="{% url 'accounts:public_profile' macro.user.profile.public_id %}">{{ macro.user.profile.display_name }}</a>
+                                            {% endif %}
+                                        </small>
+                                        <button class="btn btn-sm btn-outline-danger btn-remove-from-cart" data-macro-id="{{ macro.id }}">
+                                            <i class="fas fa-times"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="card shadow mt-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <div>
+                            <h5 class="mb-1">Ready to download?</h5>
+                            <p class="text-muted mb-0">Upload your Key Commands.xml file and we'll embed all {{ cart_count }} macro{{ cart_count|pluralize }} into it.</p>
+                        </div>
+                        <a href="{% url 'macros:upload_and_download' %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-upload"></i> Upload & Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Clear Cart Confirmation Modal -->
+<div class="modal fade" id="clearCartModal" tabindex="-1" aria-labelledby="clearCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="clearCartModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>Clear Cart
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Are you sure you want to clear your cart? This will remove all {{ cart_count }} macro{{ cart_count|pluralize }} from your cart.</p>
+                <p class="text-muted small mt-2 mb-0">
+                    <i class="fas fa-info-circle"></i> This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <a href="{% url 'macros:clear_cart' %}" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Clear Cart
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Remove From Cart Confirmation Modal -->
+<div class="modal fade" id="removeFromCartModal" tabindex="-1" aria-labelledby="removeFromCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="removeFromCartModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>Remove from Cart
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Are you sure you want to remove this macro from your cart?</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmRemoveBtn">
+                    <i class="fas fa-times"></i> Remove
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Remove from cart
+    const removeButtons = document.querySelectorAll('.btn-remove-from-cart');
+    removeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const macroId = this.dataset.macroId;
+            // Set the macro ID for the remove modal
+            const removeModal = document.getElementById('removeFromCartModal');
+            if (removeModal) {
+                const confirmBtn = removeModal.querySelector('#confirmRemoveBtn');
+                if (confirmBtn) {
+                    confirmBtn.onclick = function() {
+                        fetch(`/macros/cart/remove/${macroId}/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}',
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                if (window.showToast) {
+                                    showToast('Macro removed from cart', 'success');
+                                }
+                                setTimeout(() => location.reload(), 500);
+                            } else {
+                                if (window.showToast) {
+                                    showToast(data.message, 'error');
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            if (window.showToast) {
+                                showToast('An error occurred. Please try again.', 'error');
+                            }
+                        });
+                        // Close modal
+                        const modalInstance = bootstrap.Modal.getInstance(removeModal);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                    };
+                }
+                // Show the modal
+                const modal = new bootstrap.Modal(removeModal);
+                modal.show();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us - DAW Macros Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>Contact Us
+                    </h1>
+                    <p class="mb-0 mt-2 opacity-75">We'd love to hear from you! Send us an email and we'll respond as soon as possible.</p>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <div class="row">
+                        <!-- Contact Instructions -->
+                        <div class="col-lg-8">
+                            <h2 class="h4 mb-4">
+                                <i class="fas fa-envelope me-2 text-primary"></i>Send us an Email
+                            </h2>
+                            
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>To contact us, please send an email to:</strong>
+                                <div class="mt-3">
+                                    <h4 class="mb-0">
+                                        <a href="mailto:dmh@bandpassrecords.com" class="text-decoration-none">
+                                            <i class="fas fa-envelope me-2"></i>
+                                            dmh@bandpassrecords.com
+                                        </a>
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Links -->
+                        <div class="col-lg-4 mt-5 mt-lg-0">
+                            <h2 class="h4 mb-4">
+                                <i class="fas fa-link me-2 text-primary"></i>Quick Links
+                            </h2>
+                            
+                            <div class="contact-info">
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="contact-icon me-3">
+                                            <i class="fas fa-question-circle fa-lg text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1" style="color: #6c757d;">Need Help?</h5>
+                                            <p class="text-muted mb-0">
+                                                Check out our <a href="{% url 'core:help' %}" class="text-decoration-none">Help & FAQ</a> page first
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="contact-icon me-3">
+                                            <i class="fab fa-github fa-lg text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1" style="color: #6c757d;">Found a Bug?</h5>
+                                            <p class="text-muted mb-2">
+                                                Please open an issue on GitHub and include steps to reproduce and any error messages.
+                                            </p>
+                                            <a href="https://github.com/bandpassrecords/daw-macros-hub/issues" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                                                <i class="fab fa-github me-2"></i>Open an Issue
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .contact-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(13, 110, 253, 0.1);
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    
+    .contact-info h5 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .card-header {
+        border-bottom: none;
+    }
+    
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+</style>
+{% endblock %}
+

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}My Gates{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">My gates</h2>
+      <p class="text-muted mb-0">Create and share SoundCloud gated downloads.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'gates:create_track' %}">
+      <i class="fas fa-plus"></i> New gate
+    </a>
+  </div>
+
+  <div class="row g-4">
+    {% for t in tracks %}
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title mb-2">{{ t.title|default:"Untitled gate" }}</h5>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              {% if t.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Inactive</span>{% endif %}
+              {% if t.is_listed %}<span class="badge bg-info">Listed</span>{% else %}<span class="badge bg-secondary">Unlisted</span>{% endif %}
+              {% if t.require_like %}<span class="badge bg-secondary">Requires like</span>{% endif %}
+              {% if t.require_comment %}<span class="badge bg-secondary">Requires comment</span>{% endif %}
+            </div>
+            <div class="small text-muted mb-3">
+              Share link: <a href="{% url 'gates:gate' t.public_id %}">{% url 'gates:gate' t.public_id %}</a>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted"><i class="fas fa-download"></i> {{ t.download_count }}</small>
+              <a class="btn btn-outline-primary btn-sm" href="{% url 'gates:gate' t.public_id %}">Open gate</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="text-center py-5">
+          <h3 class="mb-2">No gates yet</h3>
+          <p class="text-muted mb-4">Create your first SoundCloud gated download.</p>
+          <a class="btn btn-primary" href="{% url 'gates:create_track' %}">Create a gate</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+

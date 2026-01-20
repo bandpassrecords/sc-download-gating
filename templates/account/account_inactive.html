@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Account Inactive - DAW Macros Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h2 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Account Inactive
+                    </h2>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-user-slash fa-4x text-warning mb-3"></i>
+                        <h3 class="mb-3">This account is inactive</h3>
+                        <p class="text-muted mb-4">
+                            Your account has not been verified yet. Please check your email and click the verification link to activate your account.
+                        </p>
+                        
+                        <div class="alert alert-info text-start mb-4">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-info-circle me-2 mt-1"></i>
+                                <div class="flex-grow-1">
+                                    <strong>Need a new verification email?</strong>
+                                    <p class="mb-2 mt-1">Enter your email address below and click the button to resend the verification email.</p>
+                                    <form id="resendVerificationForm" method="post" action="{% url 'accounts:resend_verification' %}">
+                                        {% csrf_token %}
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text bg-dark border-dark">
+                                                <i class="fas fa-envelope text-muted"></i>
+                                            </span>
+                                            <input 
+                                                type="email" 
+                                                name="email"
+                                                class="form-control bg-dark border-dark text-light" 
+                                                id="verificationEmailInput"
+                                                placeholder="Enter your email address"
+                                                autocomplete="email"
+                                                required
+                                            >
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary" id="resendVerificationBtn">
+                                            <i class="fas fa-envelope me-1"></i> Resend Verification Email
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'accounts:login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                        <a href="{% url 'accounts:signup' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus me-2"></i>Sign Up
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Resend verification email handler
+    console.log('Account inactive page loaded - initializing resend verification handler');
+    
+    const resendForm = document.getElementById('resendVerificationForm');
+    const resendBtn = document.getElementById('resendVerificationBtn');
+    const emailInput = document.getElementById('verificationEmailInput');
+    
+    console.log('Elements found:', {
+        form: !!resendForm,
+        button: !!resendBtn,
+        input: !!emailInput
+    });
+    
+    if (resendForm && resendBtn && emailInput) {
+        console.log('All elements found, attaching event listener');
+        
+        resendForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submit intercepted');
+            
+            const email = emailInput.value.trim();
+            const btn = resendBtn;
+            const originalText = btn.innerHTML;
+            
+            console.log('Email entered:', email);
+            
+            // Validate email
+            if (!email) {
+                console.warn('Email validation failed: empty');
+                if (window.showToast) {
+                    showToast('Please enter your email address.', 'warning');
+                } else {
+                    alert('Please enter your email address.');
+                }
+                emailInput.focus();
+                return;
+            }
+            
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                console.warn('Email validation failed: invalid format');
+                if (window.showToast) {
+                    showToast('Please enter a valid email address.', 'warning');
+                } else {
+                    alert('Please enter a valid email address.');
+                }
+                emailInput.focus();
+                return;
+            }
+            
+            // Disable button and show loading state
+            btn.disabled = true;
+            emailInput.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Sending...';
+            console.log('Button disabled, showing loading state');
+            
+            // Get CSRF token from form
+            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            const csrfToken = csrfInput ? csrfInput.value : null;
+            
+            console.log('CSRF token found:', !!csrfToken);
+            
+            if (!csrfToken) {
+                console.error('CSRF token not found!');
+                if (window.showToast) {
+                    showToast('CSRF token not found. Please refresh the page and try again.', 'error');
+                } else {
+                    alert('CSRF token not found. Please refresh the page and try again.');
+                }
+                btn.disabled = false;
+                emailInput.disabled = false;
+                btn.innerHTML = originalText;
+                return;
+            }
+            
+            const url = '{% url "accounts:resend_verification" %}';
+            console.log('Sending request to:', url);
+            console.log('Request body:', `email=${encodeURIComponent(email)}`);
+            
+            // Send AJAX request
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                credentials: 'same-origin',
+                body: `email=${encodeURIComponent(email)}`
+            })
+            .then(response => {
+                console.log('Response received:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok,
+                    contentType: response.headers.get('content-type')
+                });
+                
+                // Check if response is ok
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Response error - Status:', response.status);
+                        console.error('Response error - Body:', text);
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    });
+                }
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    return response.text().then(text => {
+                        console.error('Non-JSON response - Content-Type:', contentType);
+                        console.error('Non-JSON response - Body:', text);
+                        throw new Error('Server returned non-JSON response');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                
+                if (data && data.success) {
+                    console.log('Success! Email sent to:', email);
+                    if (window.showToast) {
+                        showToast(data.message, 'success');
+                    } else {
+                        alert(data.message);
+                    }
+                    // Update button to show success
+                    btn.innerHTML = '<i class="fas fa-check me-1"></i> Email Sent!';
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+                    // Keep input disabled to show which email was used
+                } else {
+                    const errorMsg = data && data.message ? data.message : 'An error occurred. Please try again.';
+                    console.error('Request failed:', errorMsg);
+                    if (window.showToast) {
+                        showToast(errorMsg, 'error');
+                    } else {
+                        alert(errorMsg);
+                    }
+                    // Re-enable button and input
+                    btn.disabled = false;
+                    emailInput.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error caught:', error);
+                console.error('Error name:', error.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+                const errorMsg = error.message || 'An error occurred. Please try again.';
+                if (window.showToast) {
+                    showToast(errorMsg, 'error');
+                } else {
+                    alert(errorMsg);
+                }
+                // Re-enable button and input
+                btn.disabled = false;
+                emailInput.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        });
+        
+        console.log('Event listener attached successfully');
+    } else {
+        console.error('Missing elements:', {
+            form: !resendForm,
+            button: !resendBtn,
+            input: !emailInput
+        });
+    }
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-3 text-center mb-3 mb-md-0">
+          {% if profile_user.profile.avatar %}
+            <img src="{{ profile_user.profile.avatar.url }}" alt="{{ profile_user.profile.get_own_profile_display_name }}" class="rounded-circle profile-avatar mb-3">
+          {% else %}
+            <div class="profile-avatar-placeholder rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center">
+              <i class="fas fa-user fa-3x text-muted"></i>
+            </div>
+          {% endif %}
+
+          <h1 class="h4 mb-1">{{ profile_user.profile.get_own_profile_display_name }}</h1>
+          {% if profile_user.email %}
+            <p class="text-muted mb-2">{{ profile_user.email }}</p>
+          {% endif %}
+
+          <div class="d-flex gap-2 justify-content-center">
+            <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'gates:create_track' %}" class="btn btn-primary btn-sm">
+              <i class="fas fa-plus"></i> New gate
+            </a>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          {% if profile_user.profile.bio %}
+            <div class="mb-3">
+              <h6 class="mb-2"><i class="fas fa-user-circle"></i> About</h6>
+              <p class="text-muted mb-0">{{ profile_user.profile.bio|linebreaks }}</p>
+            </div>
+          {% endif %}
+          <div class="row small text-muted">
+            <div class="col-sm-6 mb-2">
+              <i class="fas fa-calendar"></i> Joined {{ profile_user.date_joined|date:"M Y" }}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="row text-center">
+            <div class="col-6 mb-3">
+              <div class="stat-item">
+                <h4 class="mb-0 text-primary">{{ total_gates }}</h4>
+                <small class="text-muted">Gates</small>
+              </div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="stat-item">
+                <h4 class="mb-0 text-warning">{{ total_downloads }}</h4>
+                <small class="text-muted">Downloads</small>
+              </div>
+            </div>
+          </div>
+          <div class="text-center">
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'accounts:dashboard' %}">
+              <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0"><i class="fas fa-layer-group"></i> My gates</h3>
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'gates:my_tracks' %}">Manage</a>
+  </div>
+
+  <div class="row g-4">
+    {% for t in tracks %}
+      <div class="col-lg-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title mb-2">
+              <a class="text-decoration-none" href="{% url 'gates:gate' t.public_id %}">
+                {{ t.title|default:"Untitled gate" }}
+              </a>
+            </h5>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              {% if t.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Inactive</span>{% endif %}
+              {% if t.is_listed %}<span class="badge bg-info">Listed</span>{% else %}<span class="badge bg-secondary">Unlisted</span>{% endif %}
+              {% if t.require_like %}<span class="badge bg-secondary">Like</span>{% endif %}
+              {% if t.require_comment %}<span class="badge bg-secondary">Comment</span>{% endif %}
+            </div>
+            <div class="small text-muted mb-3">
+              Share link: <a href="{% url 'gates:gate' t.public_id %}">{% url 'gates:gate' t.public_id %}</a>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted"><i class="fas fa-download"></i> {{ t.download_count }}</small>
+              <a class="btn btn-sm btn-primary" href="{% url 'gates:gate' t.public_id %}">Open</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="text-center py-5">
+          <h5 class="mb-2">No gates yet</h5>
+          <p class="text-muted mb-4">Create your first gated download.</p>
+          <a class="btn btn-primary" href="{% url 'gates:create_track' %}"><i class="fas fa-plus"></i> Create gate</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-avatar { width: 120px; height: 120px; object-fit: cover; }
+.profile-avatar-placeholder { width: 120px; height: 120px; background-color: #f8f9fa; border: 2px solid #dee2e6; }
+.stat-item h4 { font-size: 1.8rem; font-weight: 600; }
+</style>
+{% endblock %}

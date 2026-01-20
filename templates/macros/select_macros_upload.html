@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Select Macros to Save - DAW Macros Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas"></i>Select Macros to Save
+                    </h3>
+                    <p class="text-muted mb-0 mt-2">
+                        Found <strong>{{ total_macros }}</strong> macro{{ total_macros|pluralize }} in "{{ upload_data.file_name }}"
+                    </p>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Only the selected macros will be saved. The original file will not be stored on the server.
+                    </div>
+                    
+                    <form method="post" id="macro-selection-form">
+                        {% csrf_token %}
+                        
+                        <!-- Selection Controls -->
+                        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="select-all">
+                                    <i class="fas fa-check-double"></i> Select All
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all">
+                                    <i class="fas fa-times"></i> Deselect All
+                                </button>
+                            </div>
+                            <div>
+                                <span class="badge bg-primary fs-6" id="selected-count">0 selected</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Privacy Controls -->
+                        <div class="alert alert-info mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="make-all-private">
+                                <label class="form-check-label" for="make-all-private">
+                                    <i class="fas fa-lock"></i> Make all selected macros private
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                <i class="fas fa-info-circle"></i> You can also set privacy individually for each macro below. By default, macros are public.
+                            </small>
+                        </div>
+                        
+                        <!-- Macros -->
+                        <div class="mb-4">
+                            <div class="row g-3">
+                                {% for macro in macros %}
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card macro-selection-card h-100">
+                                        <div class="card-body">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input macro-checkbox" 
+                                                       type="checkbox" 
+                                                       name="selected_macros" 
+                                                       value="{{ macro.index }}" 
+                                                       id="macro_{{ macro.index }}">
+                                                <label class="form-check-label w-100" for="macro_{{ macro.index }}">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="mb-1">{{ macro.name }}</h6>
+                                                            {% if macro.description %}
+                                                            <p class="text-muted small mb-2">{{ macro.description|truncatewords:15 }}</p>
+                                                            {% endif %}
+                                                            {% if macro.key_bindings %}
+                                                            <div class="mb-2">
+                                                                <span class="key-binding">
+                                                                    <i class="fas fa-keyboard"></i> {{ macro.key_bindings|join:", " }}
+                                                                </span>
+                                                            </div>
+                                                            {% endif %}
+                                                            {% if macro.commands %}
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-list"></i> {{ macro.commands|length }} command{{ macro.commands|length|pluralize }}
+                                                            </small>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input macro-private-checkbox" 
+                                                       type="checkbox" 
+                                                       name="private_macros" 
+                                                       value="{{ macro.index }}" 
+                                                       id="private_{{ macro.index }}"
+                                                       data-macro-index="{{ macro.index }}">
+                                                <label class="form-check-label small" for="private_{{ macro.index }}">
+                                                    <i class="fas fa-lock"></i> Make private
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center mt-4 pt-4 border-top">
+                            <a href="{% url 'macros:upload_keycommands' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Upload
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg" id="save-btn" disabled>
+                                <i class="fas fa-save"></i> Save Selected Macros
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.macro-checkbox');
+    const privateCheckboxes = document.querySelectorAll('.macro-private-checkbox');
+    const selectAllBtn = document.getElementById('select-all');
+    const deselectAllBtn = document.getElementById('deselect-all');
+    const makeAllPrivateBtn = document.getElementById('make-all-private');
+    const selectedCount = document.getElementById('selected-count');
+    const saveBtn = document.getElementById('save-btn');
+    const form = document.getElementById('macro-selection-form');
+    
+    function updateSelectionCount() {
+        const selected = document.querySelectorAll('.macro-checkbox:checked').length;
+        selectedCount.textContent = `${selected} selected`;
+        saveBtn.disabled = selected === 0;
+        
+        if (selected > 0) {
+            saveBtn.classList.remove('btn-secondary');
+            saveBtn.classList.add('btn-primary');
+        } else {
+            saveBtn.classList.remove('btn-primary');
+            saveBtn.classList.add('btn-secondary');
+        }
+        
+        // Enable/disable private checkboxes based on selection
+        checkboxes.forEach(checkbox => {
+            const macroIndex = checkbox.value;
+            const privateCheckbox = document.getElementById('private_' + macroIndex);
+            if (privateCheckbox) {
+                privateCheckbox.disabled = !checkbox.checked;
+                if (!checkbox.checked) {
+                    privateCheckbox.checked = false;
+                }
+            }
+        });
+    }
+    
+    // Update count on checkbox change
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectionCount);
+    });
+    
+    // Select all
+    selectAllBtn.addEventListener('click', function() {
+        checkboxes.forEach(cb => cb.checked = true);
+        updateSelectionCount();
+    });
+    
+    // Deselect all
+    deselectAllBtn.addEventListener('click', function() {
+        checkboxes.forEach(cb => cb.checked = false);
+        privateCheckboxes.forEach(cb => cb.checked = false);
+        updateSelectionCount();
+    });
+    
+    // Make all selected private
+    makeAllPrivateBtn.addEventListener('change', function() {
+        const selectedCheckboxes = document.querySelectorAll('.macro-checkbox:checked');
+        selectedCheckboxes.forEach(checkbox => {
+            const macroIndex = checkbox.value;
+            const privateCheckbox = document.getElementById('private_' + macroIndex);
+            if (privateCheckbox) {
+                privateCheckbox.checked = makeAllPrivateBtn.checked;
+            }
+        });
+    });
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        const selected = document.querySelectorAll('.macro-checkbox:checked').length;
+        if (selected === 0) {
+            e.preventDefault();
+            if (window.showToast) {
+                showToast('Please select at least one macro to save.', 'warning');
+            }
+            return false;
+        }
+        
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    });
+    
+    // Initial count
+    updateSelectionCount();
+});
+</script>
+
+<style>
+.macro-selection-card {
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.macro-selection-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg);
+}
+
+.macro-checkbox:checked + label .macro-selection-card {
+    border-color: var(--primary);
+    background-color: rgba(31, 41, 55, 0.05);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.macro-private-checkbox {
+    margin-top: 0.5rem;
+}
+
+.macro-private-checkbox:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.macro-private-checkbox:disabled + label {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+</style>
+{% endblock %}
+

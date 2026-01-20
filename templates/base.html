@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% csrf_token %}
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}{{ APP_DISPLAY_NAME }}{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&display=swap" rel="stylesheet">
+    
+    {% load static %}
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:home' %}">
+                <i class="fas fa-cloud-arrow-down me-2"></i>
+                <span>{{ APP_DISPLAY_NAME }}</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match and request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">
+                            <i class="fas fa-home"></i> <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match and request.resolver_match.app_name == 'gates' and request.resolver_match.url_name == 'browse' %}active{% endif %}" href="{% url 'gates:browse' %}">
+                            <i class="fas fa-search"></i> <span>Browse</span>
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match and request.resolver_match.app_name == 'gates' and request.resolver_match.url_name == 'my_tracks' %}active{% endif %}" href="{% url 'gates:my_tracks' %}">
+                            <i class="fas fa-layer-group"></i> <span>My Gates</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match and request.resolver_match.app_name == 'gates' and request.resolver_match.url_name == 'create_track' %}active{% endif %}" href="{% url 'gates:create_track' %}">
+                            <i class="fas fa-plus"></i> <span>New Gate</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.email }}" class="rounded-circle me-2" style="width: 28px; height: 28px; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-user-circle me-2"></i>
+                                {% endif %}
+                                <span>{{ user.profile.get_own_profile_display_name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'gates:my_tracks' %}">
+                                    <i class="fas fa-layer-group"></i> My Gates
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                    <i class="fas fa-user"></i> Profile
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        {% if request.resolver_match and request.resolver_match.app_name == 'gates' %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="creatorDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-gear"></i> <span>Creators</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{% url 'accounts:login' %}">
+                                        <i class="fas fa-sign-in-alt"></i> Creator login
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{% url 'accounts:signup' %}">
+                                        <i class="fas fa-user-plus"></i> Creator signup
+                                    </a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:login' %}">
+                                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary ms-2" href="{% url 'accounts:signup' %}">
+                                <i class="fas fa-user-plus"></i> <span>Sign Up</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Spacer for fixed navbar -->
+    <div style="height: 76px;"></div>
+    
+    <!-- Main Content -->
+    <main>
+        <!-- Messages -->
+        {% if messages %}
+            <div class="container mt-4" style="position: relative; z-index: 10;">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="color: #e0e0e0 !important;">
+                        <i class="fas fa-{% if message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-circle{% else %}info-circle{% endif %}" style="color: #e0e0e0 !important;"></i>
+                        <span style="color: #e0e0e0 !important;">{{ message }}</span>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Modern Footer -->
+    <footer>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="mb-3">
+                        <i class="fas fa-cloud-arrow-down me-2"></i>{{ APP_DISPLAY_NAME }}
+                    </h5>
+                    <p class="text-muted mb-3">
+                        Gate a downloadable file behind a SoundCloud like + comment.
+                    </p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-muted" title="GitHub"><i class="fab fa-github fa-lg"></i> Source</a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'core:about' %}">About</a></li>
+                        <li class="mb-2"><a href="{% url 'core:help' %}">Help</a></li>
+                        <li class="mb-2"><a href="{% url 'core:contact' %}">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="mb-3">Browse</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'gates:browse' %}">All Gates</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="mb-3">Account</h6>
+                    <ul class="list-unstyled">
+                        {% if user.is_authenticated %}
+                            <li class="mb-2"><a href="{% url 'accounts:profile' %}">Profile</a></li>
+                            <li class="mb-2"><a href="{% url 'gates:my_tracks' %}">My Gates</a></li>
+                            <li class="mb-2"><a href="{% url 'gates:create_track' %}">New Gate</a></li>
+                        {% else %}
+                            <li class="mb-2"><a href="{% url 'accounts:login' %}">Login</a></li>
+                            <li class="mb-2"><a href="{% url 'accounts:signup' %}">Sign up</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="mb-3">Legal</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'core:privacy_policy' %}">Privacy</a></li>
+                        <li class="mb-2"><a href="{% url 'core:terms_of_service' %}">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-muted mb-0">
+                        &copy; {{ APP_DISPLAY_NAME }}. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">
+                        Made with <i class="fas fa-heart text-danger"></i> for the music community
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Main JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

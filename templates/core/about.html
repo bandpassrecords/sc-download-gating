@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us - DAW Macros Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>About DAW Macros Hub
+                    </h1>
+                    <p class="mb-0 mt-2 opacity-75">Empowering music producers through community-driven automation</p>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <div class="about-content">
+                        <!-- Mission Section -->
+                        <section class="mb-5">
+                            <h2 class="h4 mb-3">
+                                <i class="fas fa-bullseye me-2 text-primary"></i>Our Mission
+                            </h2>
+                            <p>
+                                DAW Macros Hub was created to solve a common problem faced by music producers: 
+                                the time-consuming process of manually configuring keyboard shortcuts and macros in Cubase. 
+                                We believe that sharing knowledge and automation tools can significantly enhance 
+                                productivity and creativity in music production.
+                            </p>
+                            <p>
+                                Our platform enables producers to share their carefully crafted macros with the community, 
+                                discover powerful shortcuts created by others, and build a comprehensive library of 
+                                automation tools that work seamlessly with Steinberg Cubase.
+                            </p>
+                        </section>
+
+                        <!-- What We Do Section -->
+                        <section class="mb-5">
+                            <h2 class="h4 mb-3">
+                                <i class="fas fa-cogs me-2 text-primary"></i>What We Do
+                            </h2>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="d-flex align-items-start">
+                                        <div class="feature-icon me-3">
+                                            <i class="fas fa-upload fa-2x text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-2">Easy Upload</h5>
+                                            <p class="text-light mb-0" style="opacity: 0.85;">
+                                                Upload your Cubase Key Commands.xml file and our system automatically 
+                                                parses and extracts all your macros, making them ready to share.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <div class="d-flex align-items-start">
+                                        <div class="feature-icon me-3">
+                                            <i class="fas fa-share-alt fa-2x text-success"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-2">Community Sharing</h5>
+                                            <p class="text-light mb-0" style="opacity: 0.85;">
+                                                Share your macros publicly or keep them private. Add descriptions, 
+                                                tags, and categorize them for easy discovery by other producers.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <div class="d-flex align-items-start">
+                                        <div class="feature-icon me-3">
+                                            <i class="fas fa-search fa-2x text-info"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-2">Discover & Download</h5>
+                                            <p class="text-light mb-0" style="opacity: 0.85;">
+                                                Browse through thousands of macros created by the community. 
+                                                Search by function, Cubase version, or popularity.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <div class="d-flex align-items-start">
+                                        <div class="feature-icon me-3">
+                                            <i class="fas fa-download fa-2x text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-2">Seamless Integration</h5>
+                                            <p class="text-light mb-0" style="opacity: 0.85;">
+                                                Download selected macros as a ready-to-use Key Commands.xml file 
+                                                that you can directly import into your Cubase installation.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Features Section -->
+                        <section class="mb-5">
+                            <h2 class="h4 mb-3">
+                                <i class="fas fa-star me-2 text-primary"></i>Key Features
+                            </h2>
+                            <ul class="list-unstyled">
+                                <li class="mb-3">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Automatic Parsing:</strong> Upload your Key Commands.xml file and we extract all macros automatically
+                                </li>
+                                <li class="mb-3">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Cubase Version Support:</strong> Filter macros by your specific Cubase version
+                                </li>
+                                <li class="mb-3">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Rating System:</strong> Rate and review macros to help others find the best tools
+                                </li>
+                                <li class="mb-3">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Privacy Control:</strong> Keep your macros private or share them with the community
+                                </li>
+                                <li class="mb-3">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>User Profiles:</strong> Build your reputation as a macro creator and see your contributions
+                                </li>
+                                <li class="mb-3">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <strong>Search & Filter:</strong> Powerful search tools to find exactly what you need
+                                </li>
+                            </ul>
+                        </section>
+
+                        <!-- Community Section -->
+                        <section class="mb-5">
+                            <h2 class="h4 mb-3">
+                                <i class="fas fa-users me-2 text-primary"></i>Join Our Community
+                            </h2>
+                            <p>
+                                DAW Macros Hub is built by producers, for producers. Whether you're a seasoned 
+                                professional or just starting out with Cubase, our community welcomes everyone who 
+                                wants to improve their workflow and share knowledge.
+                            </p>
+                            <p>
+                                By contributing your macros, you're helping thousands of other producers save time 
+                                and work more efficiently. Every macro shared makes the entire community stronger.
+                            </p>
+                            <div class="mt-4">
+                                <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-lg me-2">
+                                    <i class="fas fa-user-plus me-2"></i>Join Free
+                                </a>
+                                <a href="{% url 'macros:macro_list' %}" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-search me-2"></i>Browse Macros
+                                </a>
+                            </div>
+                        </section>
+
+                        <!-- Technology Section -->
+                        <section class="mb-5">
+                            <h2 class="h4 mb-3">
+                                <i class="fas fa-code me-2 text-primary"></i>Built With Care
+                            </h2>
+                            <p>
+                                Our platform is built using modern web technologies to ensure a fast, secure, and 
+                                reliable experience. We're committed to maintaining and improving the platform based 
+                                on community feedback.
+                            </p>
+                            <p class="mb-0">
+                                If you encounter any issues or have suggestions for improvement, please 
+                                <a href="{% url 'core:contact' %}" class="text-decoration-none">contact us</a> or 
+                                check out our <a href="{% url 'core:help' %}" class="text-decoration-none">Help & FAQ</a> page.
+                            </p>
+                        </section>
+
+                        <!-- Contact Section -->
+                        <section class="mb-5">
+                            <div class="alert alert-info">
+                                <h5 class="alert-heading">
+                                    <i class="fas fa-envelope me-2"></i>Get in Touch
+                                </h5>
+                                <p class="mb-2">
+                                    Have questions, suggestions, or feedback? We'd love to hear from you!
+                                </p>
+                                <a href="{% url 'core:contact' %}" class="btn btn-info">
+                                    <i class="fas fa-paper-plane me-2"></i>Contact Us
+                                </a>
+                            </div>
+                        </section>
+
+                        <!-- Trademark Section -->
+                        <section class="mb-0">
+                            <div class="card border-secondary bg-dark">
+                                <div class="card-body">
+                                    <p class="text-light mb-2 small" style="opacity: 0.8;">
+                                        &copy; DAW Macros Hub by BandPass Records. All rights reserved.
+                                    </p>
+                                    <p class="text-light mb-0 small" style="opacity: 0.7;">
+                                        Cubase is a registered trademark of Steinberg Media Technologies GmbH.<br>
+                                        DAW Macros Hub is not affiliated with or endorsed by Steinberg.
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .about-content {
+        line-height: 1.8;
+        color: var(--text-primary);
+    }
+    
+    .about-content h2 {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-top: 2rem;
+    }
+    
+    .about-content h2:first-of-type {
+        margin-top: 0;
+    }
+    
+    .about-content h5 {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    
+    .about-content p {
+        margin-bottom: 1rem;
+        color: var(--text-secondary);
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59, 130, 246, 0.15);
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+    
+    .about-content a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .about-content a:hover {
+        color: var(--primary-hover);
+        text-decoration: underline;
+    }
+    
+    /* Ensure buttons maintain their original colors and don't inherit from .about-content a */
+    .about-content .btn {
+        color: #ffffff !important;
+        text-decoration: none !important;
+    }
+    
+    .about-content .btn:hover {
+        color: #ffffff !important;
+        text-decoration: none !important;
+    }
+    
+    .about-content .btn-outline-primary {
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+    
+    .about-content .btn-outline-primary:hover {
+        color: #ffffff !important;
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+    
+    .list-unstyled li {
+        padding-left: 0;
+        color: var(--text-secondary);
+    }
+</style>
+{% endblock %}
+
