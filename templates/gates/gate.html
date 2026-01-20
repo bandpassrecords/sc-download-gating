@@ -62,7 +62,13 @@
                     <span class="text-muted">({{ track.soundcloud_artist_username }})</span>
                   {% endif %}
                 </span>
-                {% if followed_ok %}<span class="badge bg-success">Verified</span>{% else %}<span class="badge bg-secondary">Not verified</span>{% endif %}
+                {% if follow_not_applicable %}
+                  <span class="badge bg-info">N/A</span>
+                {% elif followed_ok %}
+                  <span class="badge bg-success">Verified</span>
+                {% else %}
+                  <span class="badge bg-secondary">Not verified</span>
+                {% endif %}
               </li>
             {% endif %}
           </ul>
@@ -130,6 +136,12 @@
               <span class="align-self-center small text-muted">
                 Connected as: {{ soundcloud_username|default:soundcloud_user_urn }}
               </span>
+              <form method="post" action="{% url 'gates:soundcloud_logout' track.public_id %}" class="align-self-center">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                  <i class="fas fa-sign-out-alt"></i> Disconnect
+                </button>
+              </form>
             {% endif %}
           </div>
 

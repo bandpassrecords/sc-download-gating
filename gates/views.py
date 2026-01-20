@@ -159,9 +159,95 @@ def gate(request, public_id: str):
     if soundcloud_user_urn:
         access = GateAccess.objects.filter(track=track, soundcloud_user_urn=soundcloud_user_urn).first()
 
+    # Refresh verification status on every page load if we have a token.
+    # This prevents stale "verified" state when the user unlikes/unfollows/deletes comments on SoundCloud later.
+    if (
+        soundcloud_user_urn
+        and soundcloud_access_token
+        and is_configured()
+        and (track.require_like or track.require_comment or track.require_follow)
+        and track.soundcloud_track_urn
+    ):
+        try:
+            # Ensure we have artist identity if follow is required.
+            if track.require_follow and not track.soundcloud_artist_urn:
+                data = resolve_track_from_url(track_url=track.soundcloud_track_url, access_token=soundcloud_access_token)
+                user = data.get("user") or {}
+                artist_urn = (user.get("urn") or "").strip()
+                artist_username = (user.get("username") or "").strip()
+                dirty_fields = []
+                if artist_urn:
+                    track.soundcloud_artist_urn = artist_urn
+                    dirty_fields.append("soundcloud_artist_urn")
+                if artist_username:
+                    track.soundcloud_artist_username = artist_username
+                    dirty_fields.append("soundcloud_artist_username")
+                if dirty_fields:
+                    dirty_fields.append("updated_at")
+                    track.save(update_fields=dirty_fields)
+
+            liked_now = True if not track.require_like else user_liked_track(
+                access_token=soundcloud_access_token,
+                track_urn=track.soundcloud_track_urn,
+                max_pages=10,
+            )
+            commented_now = True if not track.require_comment else user_commented_on_track(
+                access_token=soundcloud_access_token,
+                track_identifier=track.soundcloud_track_urn,
+                user_urn=soundcloud_user_urn,
+                max_pages=10,
+            )
+
+            if not track.require_follow:
+                followed_now = True
+            elif track.soundcloud_artist_urn and soundcloud_user_urn == track.soundcloud_artist_urn:
+                followed_now = True  # N/A
+            elif track.soundcloud_artist_urn:
+                followed_now = user_follows_user(
+                    access_token=soundcloud_access_token,
+                    target_user_urn=track.soundcloud_artist_urn,
+                )
+            else:
+                # Can't verify follow without artist identity
+                followed_now = False
+
+            access, _ = GateAccess.objects.get_or_create(
+                track=track,
+                soundcloud_user_urn=soundcloud_user_urn,
+                defaults={"soundcloud_username": soundcloud_username},
+            )
+            access.soundcloud_username = soundcloud_username or access.soundcloud_username
+            access.verified_like = bool(liked_now)
+            access.verified_comment = bool(commented_now)
+            access.verified_follow = bool(followed_now)
+            access.verified_at = timezone.now()
+            access.last_ip_address = _get_client_ip(request)
+            access.last_user_agent = request.META.get("HTTP_USER_AGENT", "")[:2000]
+            access.save(
+                update_fields=[
+                    "soundcloud_username",
+                    "verified_like",
+                    "verified_comment",
+                    "verified_follow",
+                    "verified_at",
+                    "last_ip_address",
+                    "last_user_agent",
+                    "updated_at",
+                ]
+            )
+        except Exception:
+            # Don't break the public gate page if SoundCloud API is temporarily failing.
+            pass
+
     liked_ok = bool(access and access.verified_like) if track.require_like else True
     commented_ok = bool(access and access.verified_comment) if track.require_comment else True
-    followed_ok = bool(access and access.verified_follow) if track.require_follow else True
+    follow_not_applicable = bool(
+        track.require_follow
+        and soundcloud_user_urn
+        and track.soundcloud_artist_urn
+        and soundcloud_user_urn == track.soundcloud_artist_urn
+    )
+    followed_ok = True if not track.require_follow else bool(follow_not_applicable or (access and access.verified_follow))
     can_download = liked_ok and commented_ok and followed_ok
 
     context = {
@@ -174,6 +260,7 @@ def gate(request, public_id: str):
         "liked_ok": liked_ok,
         "commented_ok": commented_ok,
         "followed_ok": followed_ok,
+        "follow_not_applicable": follow_not_applicable,
         "can_download": can_download,
     }
     return render(request, "gates/gate.html", context)
@@ -292,7 +379,11 @@ def soundcloud_callback(request):
         if track.require_follow:
             if not track.soundcloud_artist_urn:
                 raise RuntimeError("Missing artist profile identifier for follow requirement.")
-            followed = user_follows_user(access_token=token.access_token, target_user_urn=track.soundcloud_artist_urn)
+            if user_urn == track.soundcloud_artist_urn:
+                # You cannot follow yourself; treat as not applicable.
+                followed = True
+            else:
+                followed = user_follows_user(access_token=token.access_token, target_user_urn=track.soundcloud_artist_urn)
     except Exception as e:
         messages.error(request, f"Could not verify actions on SoundCloud: {e}")
         return redirect("gates:gate", public_id=track.public_id)
@@ -360,6 +451,29 @@ def authorize(request):
     We simply reuse the same callback handler.
     """
     return soundcloud_callback(request)
+
+
+@require_POST
+def soundcloud_logout(request, public_id: str):
+    """
+    Clear SoundCloud identity/token from this browser session (fan logout).
+    Does NOT affect creator (Django) login.
+    """
+    track = get_object_or_404(GatedTrack, public_id=public_id, is_active=True)
+    for k in (
+        "soundcloud_user_urn",
+        "soundcloud_username",
+        "soundcloud_access_token",
+        "soundcloud_expires_at",
+        "sc_oauth_state",
+        "sc_pkce_verifier",
+        "sc_target_public_id",
+    ):
+        if k in request.session:
+            del request.session[k]
+    request.session.modified = True
+    messages.success(request, "Disconnected from SoundCloud.")
+    return redirect("gates:gate", public_id=track.public_id)
 
 
 @require_POST
@@ -447,6 +561,31 @@ def soundcloud_follow(request, public_id: str):
 
     if not track.soundcloud_artist_urn:
         messages.error(request, "Could not identify the SoundCloud artist for this gate yet.")
+        return redirect("gates:gate", public_id=track.public_id)
+
+    if user_urn == track.soundcloud_artist_urn:
+        # Following yourself isn't possible; mark as satisfied.
+        access, _ = GateAccess.objects.get_or_create(
+            track=track,
+            soundcloud_user_urn=user_urn,
+            defaults={"soundcloud_username": username},
+        )
+        access.soundcloud_username = username or access.soundcloud_username
+        access.verified_follow = True
+        access.last_ip_address = _get_client_ip(request)
+        access.last_user_agent = request.META.get("HTTP_USER_AGENT", "")[:2000]
+        access.verified_at = timezone.now()
+        access.save(
+            update_fields=[
+                "soundcloud_username",
+                "verified_follow",
+                "verified_at",
+                "last_ip_address",
+                "last_user_agent",
+                "updated_at",
+            ]
+        )
+        messages.info(request, "You are the artist for this track — follow is not required.")
         return redirect("gates:gate", public_id=track.public_id)
 
     try:
@@ -558,7 +697,9 @@ def download(request, public_id: str):
     if track.require_comment and not access.verified_comment:
         messages.error(request, "You still need to comment on the track on SoundCloud.")
         return redirect("gates:gate", public_id=track.public_id)
-    if track.require_follow and not access.verified_follow:
+    if track.require_follow and not access.verified_follow and not (
+        track.soundcloud_artist_urn and user_urn == track.soundcloud_artist_urn
+    ):
         messages.error(request, "You still need to follow the artist on SoundCloud.")
         return redirect("gates:gate", public_id=track.public_id)
 

@@ -12,6 +12,7 @@ urlpatterns = [
     path("t/<str:public_id>/", views.gate, name="gate"),
     path("t/<str:public_id>/download/", views.download, name="download"),
     path("t/<str:public_id>/soundcloud/connect/", views.soundcloud_connect, name="soundcloud_connect"),
+    path("t/<str:public_id>/soundcloud/logout/", views.soundcloud_logout, name="soundcloud_logout"),
     path("t/<str:public_id>/soundcloud/like/", views.soundcloud_like, name="soundcloud_like"),
     path("t/<str:public_id>/soundcloud/follow/", views.soundcloud_follow, name="soundcloud_follow"),
     path("t/<str:public_id>/soundcloud/comment/", views.soundcloud_comment, name="soundcloud_comment"),

@@ -19,7 +19,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
 
 SOUNDCLOUD_CLIENT_ID='Lxh5TGHngyLExatHJu3b4dEbC6EohrSg'
 SOUNDCLOUD_CLIENT_SECRET='58hmUzSS6B95txAVqV5Jeqkcz1KTU0u2'
-SOUNDCLOUD_REDIRECT_URI='download.bandpassrecords.com/authorize'
+SOUNDCLOUD_REDIRECT_URI='https://download.bandpassrecords.com/authorize'
 # EMAIL_HOST_USER=cms@bandpassrecords.com
 # Optional. SoundCloud docs do not consistently document scopes; "*" works as a default.
 SOUNDCLOUD_OAUTH_SCOPE='*'

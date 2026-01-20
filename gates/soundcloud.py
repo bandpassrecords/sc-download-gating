@@ -267,20 +267,24 @@ def get_me(*, access_token: str) -> Dict[str, Any]:
     return api_get("/me", access_token=access_token)
 
 
-def user_liked_track(*, access_token: str, track_urn: str) -> bool:
+def user_liked_track(*, access_token: str, track_urn: str, max_pages: int = 10) -> bool:
     """
     Check if the authenticated user has liked the given track.
     Strategy: iterate /me/likes/tracks pages and look for matching urn.
     """
     params: Dict[str, Any] = {"limit": 200, "linked_partitioning": "true"}
     data = api_get("/me/likes/tracks", access_token=access_token, params=params)
+    pages = 0
     while True:
+        pages += 1
         collection = data.get("collection") or []
         for item in collection:
             # Items may be "like" objects or track objects depending on API shape
             track = item.get("track") if isinstance(item, dict) and "track" in item else item
             if isinstance(track, dict) and track.get("urn") == track_urn:
                 return True
+        if pages >= max_pages:
+            return False
         next_href = data.get("next_href")
         if not next_href:
             return False
@@ -289,6 +293,8 @@ def user_liked_track(*, access_token: str, track_urn: str) -> bool:
             return False
         # Use OAuth header as primary variant for pagination requests.
         resp = requests.get(next_href, headers={"Authorization": f"OAuth {access_token}"}, timeout=20)
+        if resp.status_code == 401:
+            resp = requests.get(next_href, headers={"Authorization": f"Bearer {access_token}"}, timeout=20)
         resp.raise_for_status()
         data = resp.json()
 
@@ -360,7 +366,13 @@ def user_follows_user(
         data = resp.json()
 
 
-def user_commented_on_track(*, access_token: Optional[str], track_identifier: str, user_urn: str) -> bool:
+def user_commented_on_track(
+    *,
+    access_token: Optional[str],
+    track_identifier: str,
+    user_urn: str,
+    max_pages: int = 10,
+) -> bool:
     """
     Check if a user has commented on the track by scanning track comments.
     Uses public comments if possible; if access_token is provided, uses it.
@@ -372,11 +384,15 @@ def user_commented_on_track(*, access_token: Optional[str], track_identifier: st
             params["client_id"] = client_id
     track_id = _extract_track_id(track_identifier)
     data = api_get(f"/tracks/{track_id}/comments", access_token=access_token, params=params)
+    pages = 0
     while True:
+        pages += 1
         for c in data.get("collection") or []:
             user = c.get("user") or {}
             if user.get("urn") == user_urn:
                 return True
+        if pages >= max_pages:
+            return False
         next_href = data.get("next_href")
         if not next_href:
             return False
@@ -384,6 +400,8 @@ def user_commented_on_track(*, access_token: Optional[str], track_identifier: st
             return False
         headers = {"Authorization": f"OAuth {access_token}"} if access_token else {}
         resp = requests.get(next_href, headers=headers, timeout=20)
+        if resp.status_code == 401 and access_token:
+            resp = requests.get(next_href, headers={"Authorization": f"Bearer {access_token}"}, timeout=20)
         resp.raise_for_status()
         data = resp.json()
 
