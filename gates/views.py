@@ -217,9 +217,11 @@ def gate(request, public_id: str):
                 defaults={"soundcloud_username": soundcloud_username},
             )
             access.soundcloud_username = soundcloud_username or access.soundcloud_username
-            access.verified_like = bool(liked_now)
-            access.verified_comment = bool(commented_now)
-            access.verified_follow = bool(followed_now)
+            # IMPORTANT: avoid "downgrading" a previously-verified status on refresh.
+            # SoundCloud APIs can be eventually-consistent; a just-posted comment/like might not show up immediately.
+            access.verified_like = bool(access.verified_like or liked_now)
+            access.verified_comment = bool(access.verified_comment or commented_now)
+            access.verified_follow = bool(access.verified_follow or followed_now)
             access.verified_at = timezone.now()
             access.last_ip_address = _get_client_ip(request)
             access.last_user_agent = request.META.get("HTTP_USER_AGENT", "")[:2000]
