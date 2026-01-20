@@ -326,38 +326,6 @@ def gate(request, public_id: str):
             # Don't break the public gate page if SoundCloud API is temporarily failing.
             pass
 
-    follow_targets_status = []
-    artist_follow_status = {"urn": track.soundcloud_artist_urn, "username": track.soundcloud_artist_username, "na": False, "followed": False}
-    if track.require_follow and soundcloud_access_token and is_configured():
-        try:
-            required_urns = []
-            if track.soundcloud_artist_urn:
-                required_urns.append(track.soundcloud_artist_urn)
-            for t in follow_targets:
-                if t.soundcloud_user_urn:
-                    required_urns.append(t.soundcloud_user_urn)
-            followings = get_followings_urns(access_token=soundcloud_access_token, max_pages=5) if required_urns else set()
-
-            if track.soundcloud_artist_urn:
-                artist_follow_status["na"] = bool(soundcloud_user_urn == track.soundcloud_artist_urn)
-                artist_follow_status["followed"] = bool(artist_follow_status["na"] or (track.soundcloud_artist_urn in followings))
-
-            for t in follow_targets:
-                na = bool(t.soundcloud_user_urn and soundcloud_user_urn == t.soundcloud_user_urn)
-                followed = bool(na or (t.soundcloud_user_urn and (t.soundcloud_user_urn in followings)))
-                follow_targets_status.append(
-                    {
-                        "id": t.id,
-                        "profile_url": t.profile_url,
-                        "urn": t.soundcloud_user_urn,
-                        "username": t.soundcloud_username,
-                        "na": na,
-                        "followed": followed,
-                    }
-                )
-        except Exception:
-            pass
-
     liked_ok = bool(access and access.verified_like) if track.require_like else True
     commented_ok = bool(access and access.verified_comment) if track.require_comment else True
     follow_not_applicable = bool(
@@ -369,6 +337,53 @@ def gate(request, public_id: str):
     followed_ok = bool(access and access.verified_follow) if track.require_follow else True
     file_ready = bool(track.download_file)
     can_download = bool(file_ready and liked_ok and commented_ok and followed_ok)
+
+    # Build per-target follow status for UI.
+    # IMPORTANT: do not depend on having an access token to *display* targets.
+    follow_targets_status = []
+    artist_follow_status = {
+        "urn": track.soundcloud_artist_urn,
+        "username": track.soundcloud_artist_username,
+        "na": bool(follow_not_applicable),
+        "followed": False,
+    }
+    followings = set()
+    if track.require_follow and soundcloud_access_token and is_configured():
+        try:
+            followings = get_followings_urns(access_token=soundcloud_access_token, max_pages=5)
+        except Exception:
+            followings = set()
+
+    if track.require_follow:
+        # If we have no token, fall back to the stored overall verification to avoid hiding targets
+        # (e.g. artist is the logged user and there are additional required follow targets).
+        fallback_followed = bool(access and access.verified_follow)
+
+        if artist_follow_status["na"]:
+            artist_follow_status["followed"] = True
+        elif track.soundcloud_artist_urn and followings:
+            artist_follow_status["followed"] = bool(track.soundcloud_artist_urn in followings)
+        else:
+            artist_follow_status["followed"] = bool(fallback_followed)
+
+        for t in follow_targets:
+            na = bool(t.soundcloud_user_urn and soundcloud_user_urn == t.soundcloud_user_urn)
+            if na:
+                followed = True
+            elif t.soundcloud_user_urn and followings:
+                followed = bool(t.soundcloud_user_urn in followings)
+            else:
+                followed = bool(fallback_followed)
+            follow_targets_status.append(
+                {
+                    "id": t.id,
+                    "profile_url": t.profile_url,
+                    "urn": t.soundcloud_user_urn,
+                    "username": t.soundcloud_username,
+                    "na": na,
+                    "followed": followed,
+                }
+            )
 
     context = {
         "track": track,
