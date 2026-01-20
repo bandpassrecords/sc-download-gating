@@ -9,6 +9,7 @@ urlpatterns = [
     path("my/", views.my_tracks, name="my_tracks"),
     path("new/", views.create_track, name="create_track"),
     path("t/<str:public_id>/edit/", views.edit_track, name="edit_track"),
+    path("t/<str:public_id>/file/", views.upload_track_file, name="upload_track_file"),
     path("t/<str:public_id>/delete/", views.delete_track, name="delete_track"),
     path("t/<str:public_id>/", views.gate, name="gate"),
     path("t/<str:public_id>/download/", views.download, name="download"),
@@ -16,6 +17,11 @@ urlpatterns = [
     path("t/<str:public_id>/soundcloud/logout/", views.soundcloud_logout, name="soundcloud_logout"),
     path("t/<str:public_id>/soundcloud/like/", views.soundcloud_like, name="soundcloud_like"),
     path("t/<str:public_id>/soundcloud/follow/", views.soundcloud_follow, name="soundcloud_follow"),
+    path(
+        "t/<str:public_id>/soundcloud/follow/target/<int:target_id>/",
+        views.soundcloud_follow_target,
+        name="soundcloud_follow_target",
+    ),
     path("t/<str:public_id>/soundcloud/comment/", views.soundcloud_comment, name="soundcloud_comment"),
     path("soundcloud/callback/", views.soundcloud_callback, name="soundcloud_callback"),
 ]

@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Upload file{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 860px;">
+  <div
+    id="uploadOverlay"
+    style="display:none; position: fixed; inset: 0; background: rgba(20,20,20,0.78); z-index: 2000;">
+    <div class="d-flex flex-column justify-content-center align-items-center" style="height: 100%; padding: 24px;">
+      <div class="mb-3">
+        <div class="spinner-border text-light" role="status" aria-label="Uploading"></div>
+      </div>
+      <div class="text-light fw-semibold mb-2">Uploading…</div>
+      <div class="text-muted small mb-3" style="max-width: 520px; text-align:center;">
+        Please keep this tab open until the upload finishes.
+      </div>
+      <div style="width: min(520px, 92vw);">
+        <div class="d-flex justify-content-between small text-muted mb-1">
+          <span>Progress</span>
+          <span id="uploadOverlayPct">0%</span>
+        </div>
+        <div class="progress" style="height: 10px;">
+          <div
+            id="uploadOverlayBar"
+            class="progress-bar"
+            role="progressbar"
+            style="width: 0%;"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"></div>
+        </div>
+        <div id="uploadOverlayMsg" class="small text-muted mt-2"></div>
+        <div id="uploadErrors" class="alert alert-danger mt-3 mb-0" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h2 class="mb-1">Upload file (step 2)</h2>
+      <p class="text-muted mb-0">This file will be delivered only via the gated download endpoint.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" href="{% url 'gates:edit_track' track.public_id %}">Skip for now</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <form method="post" enctype="multipart/form-data" id="uploadFileForm">
+      <div class="card-body">
+        {% csrf_token %}
+
+        {% if track.download_file %}
+          <div class="alert alert-info">
+            Current file: <strong>{{ track.download_file.name }}</strong>
+            {% if track.download_filename %}
+              <span class="text-muted">(downloads as: {{ track.download_filename }})</span>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="alert alert-warning">No file uploaded yet.</div>
+        {% endif %}
+
+        <label class="form-label">Choose file</label>
+        <input type="file" name="download_file" class="form-control" required>
+        <div class="form-text">
+          Uploading a new file will replace the existing file.
+        </div>
+      </div>
+
+      <div class="card-footer d-flex justify-content-end gap-2">
+        <button class="btn btn-primary" type="submit" id="uploadSubmit">Upload</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const form = document.getElementById("uploadFileForm");
+  if (!form) return;
+
+  const submitBtn = document.getElementById("uploadSubmit");
+  const err = document.getElementById("uploadErrors");
+
+  function setProgress(percent) {
+    const p = Math.max(0, Math.min(100, percent || 0));
+    const overlayBar = document.getElementById("uploadOverlayBar");
+    const overlayPct = document.getElementById("uploadOverlayPct");
+    if (overlayBar) {
+      overlayBar.style.width = p + "%";
+      overlayBar.setAttribute("aria-valuenow", String(p));
+    }
+    if (overlayPct) overlayPct.textContent = p + "%";
+  }
+
+  function showError(html) {
+    if (!err) return;
+    err.style.display = "block";
+    err.innerHTML = html;
+  }
+
+  function clearError() {
+    if (!err) return;
+    err.style.display = "none";
+    err.innerHTML = "";
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    clearError();
+    setProgress(0);
+
+    const overlay = document.getElementById("uploadOverlay");
+    if (overlay) overlay.style.display = "block";
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Uploading…";
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", form.action || window.location.href, true);
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+    xhr.upload.onprogress = function (evt) {
+      if (!evt.lengthComputable) return;
+      const percent = Math.round((evt.loaded / evt.total) * 100);
+      setProgress(percent);
+      const line = `Uploaded ${Math.round(evt.loaded / (1024*1024))}MB of ${Math.round(evt.total / (1024*1024))}MB`;
+      const overlayMsg = document.getElementById("uploadOverlayMsg");
+      if (overlayMsg) overlayMsg.textContent = line;
+    };
+
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText || "{}");
+          if (data.redirect) {
+            window.location.href = data.redirect;
+            return;
+          }
+        } catch (_) {}
+        window.location.reload();
+        return;
+      }
+
+      const overlay = document.getElementById("uploadOverlay");
+      if (overlay) overlay.style.display = "none";
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Upload";
+      }
+      try {
+        const data = JSON.parse(xhr.responseText || "{}");
+        const lines = [];
+        if (data.errors) {
+          lines.push("<ul>" + Object.keys(data.errors).map(k => `<li><strong>${k}</strong>: ${data.errors[k].join(", ")}</li>`).join("") + "</ul>");
+        }
+        showError(lines.join("") || "Upload failed. Please try again.");
+      } catch (_) {
+        showError("Upload failed. Please try again.");
+      }
+    };
+
+    xhr.onerror = function () {
+      const overlay = document.getElementById("uploadOverlay");
+      if (overlay) overlay.style.display = "none";
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Upload";
+      }
+      showError("Network error while uploading. Please try again.");
+    };
+
+    const formData = new FormData(form);
+    xhr.send(formData);
+  });
+})();
+</script>
+{% endblock %}

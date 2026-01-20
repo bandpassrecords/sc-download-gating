@@ -40,7 +40,8 @@ class GatedTrack(models.Model):
     require_comment = models.BooleanField(default=True)
     require_follow = models.BooleanField(default=False)
 
-    download_file = models.FileField(upload_to="gated_downloads/%Y/%m/%d/")
+    # File is uploaded in a dedicated step after gate creation.
+    download_file = models.FileField(upload_to="gated_downloads/%Y/%m/%d/", blank=True)
     download_filename = models.CharField(
         max_length=255,
         blank=True,
@@ -70,6 +71,29 @@ class GatedTrack(models.Model):
         if self.download_file and getattr(self.download_file, "name", None):
             return self.download_file.name.split("/")[-1]
         return "download"
+
+
+class GatedFollowTarget(models.Model):
+    """
+    Additional SoundCloud profiles that must be followed to unlock the download
+    (e.g. collaborations).
+    """
+
+    track = models.ForeignKey(GatedTrack, on_delete=models.CASCADE, related_name="follow_targets")
+    profile_url = models.URLField(blank=True)
+    soundcloud_user_urn = models.CharField(max_length=128, blank=True, db_index=True)
+    soundcloud_username = models.CharField(max_length=255, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [("track", "soundcloud_user_urn"), ("track", "profile_url")]
+        ordering = ["created_at"]
+
+    def __str__(self):
+        ident = self.soundcloud_username or self.soundcloud_user_urn or self.profile_url or "target"
+        return f"{self.track.public_id} -> {ident}"
 
 
 class GateAccess(models.Model):

@@ -263,6 +263,19 @@ def resolve_track_urn_from_url(*, track_url: str, access_token: Optional[str] = 
     return ""
 
 
+def resolve_user_from_url(*, profile_url: str, access_token: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Resolve a public SoundCloud profile URL to a user object.
+    Requires either an OAuth token or a configured client_id (public resolve).
+    """
+    params: Dict[str, Any] = {"url": profile_url}
+    if not access_token:
+        client_id = getattr(settings, "SOUNDCLOUD_CLIENT_ID", "")
+        if client_id:
+            params["client_id"] = client_id
+    return api_get("/resolve", access_token=access_token, params=params)
+
+
 def get_me(*, access_token: str) -> Dict[str, Any]:
     return api_get("/me", access_token=access_token)
 
@@ -359,6 +372,36 @@ def user_follows_user(
         if requests is None:  # pragma: no cover
             return False
         # next_href is a full URL; fetch it with OAuth header
+        resp = requests.get(next_href, headers={"Authorization": f"OAuth {access_token}"}, timeout=20)
+        if resp.status_code == 401:
+            resp = requests.get(next_href, headers={"Authorization": f"Bearer {access_token}"}, timeout=20)
+        resp.raise_for_status()
+        data = resp.json()
+
+
+def get_followings_urns(*, access_token: str, max_pages: int = 5) -> set[str]:
+    """
+    Fetch a (bounded) set of URNs the authenticated user follows.
+    Useful to check multiple follow targets efficiently with one traversal.
+    """
+    params: Dict[str, Any] = {"limit": 200, "linked_partitioning": "true"}
+    data = api_get("/me/followings", access_token=access_token, params=params)
+    pages = 0
+    out: set[str] = set()
+    while True:
+        pages += 1
+        for u in data.get("collection") or []:
+            if isinstance(u, dict):
+                urn = (u.get("urn") or "").strip()
+                if urn:
+                    out.add(urn)
+        if pages >= max_pages:
+            return out
+        next_href = data.get("next_href")
+        if not next_href:
+            return out
+        if requests is None:  # pragma: no cover
+            return out
         resp = requests.get(next_href, headers={"Authorization": f"OAuth {access_token}"}, timeout=20)
         if resp.status_code == 401:
             resp = requests.get(next_href, headers={"Authorization": f"Bearer {access_token}"}, timeout=20)

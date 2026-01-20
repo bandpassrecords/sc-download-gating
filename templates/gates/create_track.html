@@ -4,41 +4,10 @@
 
 {% block content %}
 <div class="container py-5" style="max-width: 860px;">
-  <div
-    id="uploadOverlay"
-    style="display:none; position: fixed; inset: 0; background: rgba(20,20,20,0.78); z-index: 2000;">
-    <div class="d-flex flex-column justify-content-center align-items-center" style="height: 100%; padding: 24px;">
-      <div class="mb-3">
-        <div class="spinner-border text-light" role="status" aria-label="Uploading"></div>
-      </div>
-      <div class="text-light fw-semibold mb-2">Uploading…</div>
-      <div class="text-muted small mb-3" style="max-width: 520px; text-align:center;">
-        Please keep this tab open until the upload finishes.
-      </div>
-      <div style="width: min(520px, 92vw);">
-        <div class="d-flex justify-content-between small text-muted mb-1">
-          <span>Progress</span>
-          <span id="uploadOverlayPct">0%</span>
-        </div>
-        <div class="progress" style="height: 10px;">
-          <div
-            id="uploadOverlayBar"
-            class="progress-bar"
-            role="progressbar"
-            style="width: 0%;"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-valuenow="0"></div>
-        </div>
-        <div id="uploadOverlayMsg" class="small text-muted mt-2"></div>
-      </div>
-    </div>
-  </div>
-
   <h2 class="mb-2">Create a SoundCloud gated download</h2>
-  <p class="text-muted mb-4">Upload a file, paste your SoundCloud track link, and require a like/comment before download.</p>
+  <p class="text-muted mb-4">Step 1: details + requirements. Step 2: upload/replace the file with progress.</p>
 
-  <form method="post" enctype="multipart/form-data" class="card" id="createGateForm">
+  <form method="post" class="card" id="createGateForm">
     <div class="card-body">
       {% csrf_token %}
 
@@ -66,34 +35,9 @@
         </div>
 
         <div class="col-12">
-          <label class="form-label">File to download</label>
-          {{ form.download_file }}
-          {% for e in form.download_file.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-
-          <div id="uploadProgressWrap" class="mt-3" style="display: none;">
-            <div class="d-flex justify-content-between small text-muted mb-1">
-              <span>Uploading…</span>
-              <span id="uploadProgressPct">0%</span>
-            </div>
-            <div class="progress" style="height: 10px;">
-              <div
-                id="uploadProgressBar"
-                class="progress-bar"
-                role="progressbar"
-                style="width: 0%;"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-valuenow="0"></div>
-            </div>
-            <div id="uploadProgressMsg" class="small text-muted mt-2"></div>
-            <div id="uploadErrors" class="alert alert-danger mt-3 mb-0" style="display:none;"></div>
-          </div>
-        </div>
-
-        <div class="col-12">
           <label class="form-label">Download filename (optional)</label>
           {{ form.download_filename }}
-          <div class="form-text">If blank, we’ll use the uploaded filename.</div>
+          <div class="form-text">If blank, we’ll use the uploaded filename from step 2.</div>
           {% for e in form.download_filename.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
         </div>
 
@@ -121,6 +65,13 @@
           {% for e in form.require_follow.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
         </div>
 
+        <div class="col-12">
+          <label class="form-label">{{ form.additional_follow_profiles.label }}</label>
+          {{ form.additional_follow_profiles }}
+          <div class="form-text">{{ form.additional_follow_profiles.help_text }}</div>
+          {% for e in form.additional_follow_profiles.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+
         <div class="col-md-6">
           <div class="form-check">
             {{ form.is_listed }}
@@ -145,136 +96,3 @@
   </form>
 </div>
 {% endblock %}
-
-{% block extra_js %}
-<script>
-(function () {
-  const form = document.getElementById("createGateForm");
-  if (!form) return;
-
-  const fileInput = form.querySelector('input[type="file"]');
-  const submitBtn = document.getElementById("createGateSubmit");
-
-  const wrap = document.getElementById("uploadProgressWrap");
-  const bar = document.getElementById("uploadProgressBar");
-  const pct = document.getElementById("uploadProgressPct");
-  const msg = document.getElementById("uploadProgressMsg");
-  const err = document.getElementById("uploadErrors");
-
-  function setProgress(percent) {
-    const p = Math.max(0, Math.min(100, percent || 0));
-    bar.style.width = p + "%";
-    bar.setAttribute("aria-valuenow", String(p));
-    pct.textContent = p + "%";
-
-    const overlayBar = document.getElementById("uploadOverlayBar");
-    const overlayPct = document.getElementById("uploadOverlayPct");
-    if (overlayBar) {
-      overlayBar.style.width = p + "%";
-      overlayBar.setAttribute("aria-valuenow", String(p));
-    }
-    if (overlayPct) overlayPct.textContent = p + "%";
-  }
-
-  function showError(html) {
-    if (!err) return;
-    err.style.display = "block";
-    err.innerHTML = html;
-  }
-
-  function clearError() {
-    if (!err) return;
-    err.style.display = "none";
-    err.innerHTML = "";
-  }
-
-  form.addEventListener("submit", function (e) {
-    // If no file selected, let normal submit happen
-    if (!fileInput || !fileInput.files || fileInput.files.length === 0) return;
-
-    e.preventDefault();
-    clearError();
-
-    if (wrap) wrap.style.display = "block";
-    if (msg) msg.textContent = "Starting upload…";
-    setProgress(0);
-
-    const overlay = document.getElementById("uploadOverlay");
-    if (overlay) overlay.style.display = "block";
-
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Uploading…";
-    }
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", form.action || window.location.href, true);
-    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-
-    xhr.upload.onprogress = function (evt) {
-      if (!evt.lengthComputable) return;
-      const percent = Math.round((evt.loaded / evt.total) * 100);
-      setProgress(percent);
-      const line = `Uploaded ${Math.round(evt.loaded / (1024*1024))}MB of ${Math.round(evt.total / (1024*1024))}MB`;
-      if (msg) msg.textContent = line;
-      const overlayMsg = document.getElementById("uploadOverlayMsg");
-      if (overlayMsg) overlayMsg.textContent = line;
-    };
-
-    xhr.onload = function () {
-      // Re-enable button
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Create gate";
-      }
-
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const data = JSON.parse(xhr.responseText || "{}");
-          if (data.redirect) {
-            window.location.href = data.redirect;
-            return;
-          }
-        } catch (_) {}
-        // Fallback: reload to show server response
-        window.location.reload();
-        return;
-      }
-
-      // If failed, hide overlay so user can fix inputs.
-      const overlay = document.getElementById("uploadOverlay");
-      if (overlay) overlay.style.display = "none";
-
-      // Try to show validation errors (JSON)
-      try {
-        const data = JSON.parse(xhr.responseText || "{}");
-        const lines = [];
-        if (data.non_field_errors && data.non_field_errors.length) {
-          lines.push("<strong>Errors:</strong><ul>" + data.non_field_errors.map(e => `<li>${e}</li>`).join("") + "</ul>");
-        }
-        if (data.errors) {
-          lines.push("<ul>" + Object.keys(data.errors).map(k => `<li><strong>${k}</strong>: ${data.errors[k].join(", ")}</li>`).join("") + "</ul>");
-        }
-        showError(lines.join("") || "Upload failed. Please try again.");
-      } catch (_) {
-        showError("Upload failed. Please try again.");
-      }
-    };
-
-    xhr.onerror = function () {
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Create gate";
-      }
-      const overlay = document.getElementById("uploadOverlay");
-      if (overlay) overlay.style.display = "none";
-      showError("Network error while uploading. Please try again.");
-    };
-
-    const formData = new FormData(form);
-    xhr.send(formData);
-  });
-})();
-</script>
-{% endblock %}
-
