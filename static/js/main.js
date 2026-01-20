@@ -305,11 +305,11 @@
                 }
                 
                 // Validate file size
-                if (file.size > 10 * 1024 * 1024) {
+                if (file.size > 250 * 1024 * 1024) {
                     fileInfo.innerHTML = `
                         <div class="alert alert-danger mb-0">
                             <i class="fas fa-exclamation-triangle"></i> 
-                            File size exceeds 10MB limit
+                            File size exceeds 250MB limit
                         </div>
                     `;
                     input.value = '';
