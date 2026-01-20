@@ -53,6 +53,18 @@
                 {% if commented_ok %}<span class="badge bg-success">Verified</span>{% else %}<span class="badge bg-secondary">Not verified</span>{% endif %}
               </li>
             {% endif %}
+            {% if track.require_follow %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                  <i class="fas fa-user-plus me-2"></i>
+                  Follow the artist
+                  {% if track.soundcloud_artist_username %}
+                    <span class="text-muted">({{ track.soundcloud_artist_username }})</span>
+                  {% endif %}
+                </span>
+                {% if followed_ok %}<span class="badge bg-success">Verified</span>{% else %}<span class="badge bg-secondary">Not verified</span>{% endif %}
+              </li>
+            {% endif %}
           </ul>
 
           {% if soundcloud_user_urn and soundcloud_has_token and not can_download %}
@@ -68,6 +80,17 @@
                   <div class="small text-muted mt-2">
                     If this fails, use <a href="{{ track.soundcloud_track_url }}" target="_blank" rel="noopener">SoundCloud</a>.
                   </div>
+                </div>
+              {% endif %}
+
+              {% if track.require_follow and not followed_ok %}
+                <div class="col-12 col-md-6">
+                  <form method="post" action="{% url 'gates:soundcloud_follow' track.public_id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-success w-100">
+                      <i class="fas fa-user-plus"></i> Follow artist from this page
+                    </button>
+                  </form>
                 </div>
               {% endif %}
 

@@ -242,8 +242,11 @@ SOUNDCLOUD_REDIRECT_URI = config('SOUNDCLOUD_REDIRECT_URI', default='')
 # FILE UPLOAD SETTINGS
 # ============================================================================
 
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+# Nginx must also allow large bodies (client_max_body_size) or you will get 413.
+# This controls Django's max accepted request body size.
+MAX_UPLOAD_MB = config("MAX_UPLOAD_MB", default=500, cast=int)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB (in-memory threshold; larger streams to disk)
+DATA_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_MB * 1024 * 1024  # e.g. 500MB
 
 
 # ============================================================================

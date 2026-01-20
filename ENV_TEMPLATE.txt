@@ -105,6 +105,13 @@ DJANGO_LOG_LEVEL=INFO
 # OPTIONAL: ADDITIONAL SETTINGS
 # ============================================================================
 
+# ============================================================================
+# UPLOAD LIMITS
+# ============================================================================
+# Nginx must also be configured with a large enough client_max_body_size.
+# Django-side max request size in MB:
+MAX_UPLOAD_MB=500
+
 # Time Zone (optional - defaults to UTC)
 # TIME_ZONE=America/New_York
 

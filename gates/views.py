@@ -6,23 +6,27 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import F
 from django.http import FileResponse, Http404
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .forms import GatedTrackCreateForm
+from .forms import GatedTrackCreateForm, GatedTrackUpdateForm
 from .models import GateAccess, GatedTrack
 from .soundcloud import (
     build_authorize_url,
     exchange_code_for_token,
+    follow_user,
     generate_pkce_pair,
     get_me,
     is_configured,
     like_track,
     post_comment,
+    resolve_track_from_url,
     resolve_track_urn_from_url,
     user_commented_on_track,
+    user_follows_user,
     user_liked_track,
 )
 
@@ -78,6 +82,21 @@ def my_tracks(request):
 
 
 @login_required
+def edit_track(request, public_id: str):
+    track = get_object_or_404(GatedTrack, public_id=public_id, owner=request.user)
+    if request.method == "POST":
+        form = GatedTrackUpdateForm(request.POST, request.FILES, instance=track)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Gate updated.")
+            return redirect("gates:edit_track", public_id=track.public_id)
+        messages.error(request, "Please fix the errors below.")
+    else:
+        form = GatedTrackUpdateForm(instance=track)
+    return render(request, "gates/edit_track.html", {"track": track, "form": form})
+
+
+@login_required
 def create_track(request):
     if request.method == "POST":
         form = GatedTrackCreateForm(request.POST, request.FILES)
@@ -86,7 +105,18 @@ def create_track(request):
             track.owner = request.user
             track.save()
             messages.success(request, "Gate created. Share the link to start collecting downloads.")
-            return redirect("gates:gate", public_id=track.public_id)
+            # After creating, send creator to edit screen (to adjust requirements).
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse({"redirect": reverse("gates:edit_track", kwargs={"public_id": track.public_id})})
+            return redirect("gates:edit_track", public_id=track.public_id)
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse(
+                {
+                    "errors": form.errors,
+                    "non_field_errors": form.non_field_errors(),
+                },
+                status=400,
+            )
         messages.error(request, "Please fix the errors below.")
     else:
         form = GatedTrackCreateForm()
@@ -96,13 +126,29 @@ def create_track(request):
 def gate(request, public_id: str):
     track = get_object_or_404(GatedTrack, public_id=public_id, is_active=True)
 
-    # Best-effort: resolve URN (helps verification later).
-    if not track.soundcloud_track_urn and is_configured():
+    # Best-effort: resolve track identifiers (helps verification later).
+    if (not track.soundcloud_track_urn or not track.soundcloud_artist_urn) and is_configured():
         try:
-            urn = resolve_track_urn_from_url(track_url=track.soundcloud_track_url, access_token=None)
-            if urn:
-                track.soundcloud_track_urn = urn
-                track.save(update_fields=["soundcloud_track_urn", "updated_at"])
+            data = resolve_track_from_url(track_url=track.soundcloud_track_url, access_token=None)
+            track_urn = (data.get("urn") or "").strip() or (
+                f"soundcloud:tracks:{data.get('id')}" if data.get("id") is not None else ""
+            )
+            user = data.get("user") or {}
+            artist_urn = (user.get("urn") or "").strip()
+            artist_username = (user.get("username") or "").strip()
+            dirty_fields = []
+            if track_urn and not track.soundcloud_track_urn:
+                track.soundcloud_track_urn = track_urn
+                dirty_fields.append("soundcloud_track_urn")
+            if artist_urn and not track.soundcloud_artist_urn:
+                track.soundcloud_artist_urn = artist_urn
+                dirty_fields.append("soundcloud_artist_urn")
+            if artist_username and not track.soundcloud_artist_username:
+                track.soundcloud_artist_username = artist_username
+                dirty_fields.append("soundcloud_artist_username")
+            if dirty_fields:
+                dirty_fields.append("updated_at")
+                track.save(update_fields=dirty_fields)
         except Exception:
             pass
 
@@ -115,7 +161,8 @@ def gate(request, public_id: str):
 
     liked_ok = bool(access and access.verified_like) if track.require_like else True
     commented_ok = bool(access and access.verified_comment) if track.require_comment else True
-    can_download = liked_ok and commented_ok
+    followed_ok = bool(access and access.verified_follow) if track.require_follow else True
+    can_download = liked_ok and commented_ok and followed_ok
 
     context = {
         "track": track,
@@ -126,6 +173,7 @@ def gate(request, public_id: str):
         "access": access,
         "liked_ok": liked_ok,
         "commented_ok": commented_ok,
+        "followed_ok": followed_ok,
         "can_download": can_download,
     }
     return render(request, "gates/gate.html", context)
@@ -195,13 +243,29 @@ def soundcloud_callback(request):
         messages.error(request, "Could not read your SoundCloud user identity.")
         return redirect("gates:gate", public_id=track.public_id)
 
-    # Make sure we can verify against a track identifier.
-    if not track.soundcloud_track_urn and is_configured():
+    # Make sure we can verify against a track identifier (and artist for follow).
+    if (not track.soundcloud_track_urn or (track.require_follow and not track.soundcloud_artist_urn)) and is_configured():
         try:
-            urn = resolve_track_urn_from_url(track_url=track.soundcloud_track_url, access_token=token.access_token)
-            if urn:
-                track.soundcloud_track_urn = urn
-                track.save(update_fields=["soundcloud_track_urn", "updated_at"])
+            data = resolve_track_from_url(track_url=track.soundcloud_track_url, access_token=token.access_token)
+            track_urn = (data.get("urn") or "").strip() or (
+                f"soundcloud:tracks:{data.get('id')}" if data.get("id") is not None else ""
+            )
+            user = data.get("user") or {}
+            artist_urn = (user.get("urn") or "").strip()
+            artist_username = (user.get("username") or "").strip()
+            dirty_fields = []
+            if track_urn and not track.soundcloud_track_urn:
+                track.soundcloud_track_urn = track_urn
+                dirty_fields.append("soundcloud_track_urn")
+            if artist_urn and not track.soundcloud_artist_urn:
+                track.soundcloud_artist_urn = artist_urn
+                dirty_fields.append("soundcloud_artist_urn")
+            if artist_username and not track.soundcloud_artist_username:
+                track.soundcloud_artist_username = artist_username
+                dirty_fields.append("soundcloud_artist_username")
+            if dirty_fields:
+                dirty_fields.append("updated_at")
+                track.save(update_fields=dirty_fields)
         except Exception:
             pass
 
@@ -215,6 +279,7 @@ def soundcloud_callback(request):
     # Verify requirements.
     liked = True
     commented = True
+    followed = True
     try:
         if track.require_like:
             liked = user_liked_track(access_token=token.access_token, track_urn=track.soundcloud_track_urn)
@@ -224,6 +289,10 @@ def soundcloud_callback(request):
                 track_identifier=track.soundcloud_track_urn,
                 user_urn=user_urn,
             )
+        if track.require_follow:
+            if not track.soundcloud_artist_urn:
+                raise RuntimeError("Missing artist profile identifier for follow requirement.")
+            followed = user_follows_user(access_token=token.access_token, target_user_urn=track.soundcloud_artist_urn)
     except Exception as e:
         messages.error(request, f"Could not verify actions on SoundCloud: {e}")
         return redirect("gates:gate", public_id=track.public_id)
@@ -239,12 +308,14 @@ def soundcloud_callback(request):
 
     access.verified_like = liked
     access.verified_comment = commented
+    access.verified_follow = followed
     access.verified_at = timezone.now()
     access.save(
         update_fields=[
             "soundcloud_username",
             "verified_like",
             "verified_comment",
+            "verified_follow",
             "verified_at",
             "last_ip_address",
             "last_user_agent",
@@ -252,7 +323,7 @@ def soundcloud_callback(request):
         ]
     )
 
-    if liked and commented:
+    if liked and commented and followed:
         messages.success(request, "Verified! You can download the file now.")
     else:
         missing = []
@@ -260,6 +331,8 @@ def soundcloud_callback(request):
             missing.append("like")
         if track.require_comment and not commented:
             missing.append("comment")
+        if track.require_follow and not followed:
+            missing.append("follow")
         messages.warning(request, f"Not verified yet. Missing: {', '.join(missing)}.")
 
     # Remember which SoundCloud user this browser session belongs to (no token persisted).
@@ -276,6 +349,17 @@ def soundcloud_callback(request):
     request.session.modified = True
 
     return redirect("gates:gate", public_id=track.public_id)
+
+
+def authorize(request):
+    """
+    Public redirect URI endpoint for SoundCloud OAuth.
+    Configure SoundCloud to redirect to:
+      https://download.bandpassrecords.com/authorize
+
+    We simply reuse the same callback handler.
+    """
+    return soundcloud_callback(request)
 
 
 @require_POST
@@ -329,6 +413,70 @@ def soundcloud_like(request, public_id: str):
     )
 
     messages.success(request, "Liked the track on SoundCloud.")
+    return redirect("gates:gate", public_id=track.public_id)
+
+
+@require_POST
+def soundcloud_follow(request, public_id: str):
+    track = get_object_or_404(GatedTrack, public_id=public_id, is_active=True)
+    token = _get_session_access_token(request)
+    user_urn = (request.session.get("soundcloud_user_urn") or "").strip()
+    username = (request.session.get("soundcloud_username") or "").strip()
+    if not token or not user_urn:
+        messages.error(request, "Please connect SoundCloud first.")
+        return redirect("gates:gate", public_id=track.public_id)
+
+    if not track.soundcloud_artist_urn and is_configured():
+        try:
+            data = resolve_track_from_url(track_url=track.soundcloud_track_url, access_token=token)
+            user = data.get("user") or {}
+            artist_urn = (user.get("urn") or "").strip()
+            artist_username = (user.get("username") or "").strip()
+            dirty_fields = []
+            if artist_urn and not track.soundcloud_artist_urn:
+                track.soundcloud_artist_urn = artist_urn
+                dirty_fields.append("soundcloud_artist_urn")
+            if artist_username and not track.soundcloud_artist_username:
+                track.soundcloud_artist_username = artist_username
+                dirty_fields.append("soundcloud_artist_username")
+            if dirty_fields:
+                dirty_fields.append("updated_at")
+                track.save(update_fields=dirty_fields)
+        except Exception:
+            pass
+
+    if not track.soundcloud_artist_urn:
+        messages.error(request, "Could not identify the SoundCloud artist for this gate yet.")
+        return redirect("gates:gate", public_id=track.public_id)
+
+    try:
+        follow_user(access_token=token, user_identifier=track.soundcloud_artist_urn)
+    except Exception as e:
+        messages.error(request, f"Could not follow the artist on SoundCloud: {e}")
+        return redirect("gates:gate", public_id=track.public_id)
+
+    access, _ = GateAccess.objects.get_or_create(
+        track=track,
+        soundcloud_user_urn=user_urn,
+        defaults={"soundcloud_username": username},
+    )
+    access.soundcloud_username = username or access.soundcloud_username
+    access.verified_follow = True
+    access.last_ip_address = _get_client_ip(request)
+    access.last_user_agent = request.META.get("HTTP_USER_AGENT", "")[:2000]
+    access.verified_at = timezone.now()
+    access.save(
+        update_fields=[
+            "soundcloud_username",
+            "verified_follow",
+            "verified_at",
+            "last_ip_address",
+            "last_user_agent",
+            "updated_at",
+        ]
+    )
+
+    messages.success(request, "Followed the artist on SoundCloud.")
     return redirect("gates:gate", public_id=track.public_id)
 
 
@@ -409,6 +557,9 @@ def download(request, public_id: str):
         return redirect("gates:gate", public_id=track.public_id)
     if track.require_comment and not access.verified_comment:
         messages.error(request, "You still need to comment on the track on SoundCloud.")
+        return redirect("gates:gate", public_id=track.public_id)
+    if track.require_follow and not access.verified_follow:
+        messages.error(request, "You still need to follow the artist on SoundCloud.")
         return redirect("gates:gate", public_id=track.public_id)
 
     # Update counters

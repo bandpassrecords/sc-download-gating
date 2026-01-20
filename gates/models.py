@@ -32,9 +32,13 @@ class GatedTrack(models.Model):
     soundcloud_track_url = models.URLField(help_text="Public SoundCloud URL to the track")
     # Preferred identifier (SoundCloud URN string, e.g. soundcloud:tracks:12345678)
     soundcloud_track_urn = models.CharField(max_length=128, blank=True, db_index=True)
+    # Track owner (artist) identity (for follow requirement)
+    soundcloud_artist_urn = models.CharField(max_length=128, blank=True, db_index=True)
+    soundcloud_artist_username = models.CharField(max_length=255, blank=True)
 
     require_like = models.BooleanField(default=True)
     require_comment = models.BooleanField(default=True)
+    require_follow = models.BooleanField(default=False)
 
     download_file = models.FileField(upload_to="gated_downloads/%Y/%m/%d/")
     download_filename = models.CharField(
@@ -80,6 +84,7 @@ class GateAccess(models.Model):
 
     verified_like = models.BooleanField(default=False)
     verified_comment = models.BooleanField(default=False)
+    verified_follow = models.BooleanField(default=False)
     verified_at = models.DateTimeField(null=True, blank=True)
 
     download_count = models.PositiveIntegerField(default=0)
@@ -98,9 +103,18 @@ class GateAccess(models.Model):
     def __str__(self):
         return f"{self.soundcloud_user_urn} -> {self.track.public_id}"
 
-    def mark_verified(self, liked: bool, commented: bool):
+    def mark_verified(self, liked: bool, commented: bool, followed: bool):
         self.verified_like = liked
         self.verified_comment = commented
+        self.verified_follow = followed
         self.verified_at = timezone.now()
-        self.save(update_fields=["verified_like", "verified_comment", "verified_at", "updated_at"])
+        self.save(
+            update_fields=[
+                "verified_like",
+                "verified_comment",
+                "verified_follow",
+                "verified_at",
+                "updated_at",
+            ]
+        )
 

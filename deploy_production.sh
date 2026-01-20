@@ -40,6 +40,10 @@ RUNTIME_DIR="gunicorn-sc-download-gate"
 GUNICORN_SOCKET="/run/${RUNTIME_DIR}/gunicorn.sock"
 GUNICORN_ACCESS_LOG="/var/log/gunicorn/${SERVICE_NAME}-access.log"
 GUNICORN_ERROR_LOG="/var/log/gunicorn/${SERVICE_NAME}-error.log"
+# Django settings module to use for ALL production commands
+DJANGO_SETTINGS_MODULE_PROD="sc_download_gate.settings.production"
+# Upload size limit (must be >= max file you plan to upload)
+CLIENT_MAX_BODY_SIZE="1024M"
 
 ###############################################################################
 # Helper Functions
@@ -94,6 +98,23 @@ check_env_file() {
         exit 1
     fi
     print_success ".env file found"
+}
+
+load_env_file() {
+    # Export variables from .env for subprocesses (migrate, collectstatic, etc.)
+    # This prevents mismatches (e.g. migrate runs on sqlite/dev but site config runs on postgres/prod).
+    if [ -f "$PROJECT_DIR/.env" ]; then
+        set -a
+        # shellcheck disable=SC1090
+        source "$PROJECT_DIR/.env"
+        set +a
+    fi
+}
+
+run_manage_py() {
+    # Run manage.py using production settings + loaded .env
+    load_env_file
+    "$VENV_DIR/bin/python" manage.py --settings="$DJANGO_SETTINGS_MODULE_PROD" "$@"
 }
 
 ###############################################################################
@@ -419,7 +440,7 @@ step_run_migrations() {
     if confirm "Run Django database migrations"; then
         print_info "Running migrations..."
         cd "$PROJECT_DIR"
-        "$VENV_DIR/bin/python" manage.py migrate
+        run_manage_py migrate --noinput
         print_success "Database migrations completed"
     else
         print_warning "Skipping database migrations"
@@ -436,13 +457,17 @@ step_configure_site() {
     if confirm "Configure Django Site object (required for email links and allauth)"; then
         print_info "Configuring Site object..."
         cd "$PROJECT_DIR"
+
+        # Ensure the sites tables exist in the SAME database used by production settings.
+        # (Fixes: relation "django_site" does not exist)
+        run_manage_py migrate sites --noinput
         
         # Use Python to update the Site object
         "$VENV_DIR/bin/python" << EOF
 import os
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sc_download_gate.settings.production')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', '${DJANGO_SETTINGS_MODULE_PROD}')
 django.setup()
 
 from django.contrib.sites.models import Site
@@ -453,7 +478,7 @@ try:
     old_name = site.name
     
     site.domain = '$DOMAIN'
-    site.name = 'DAW Macros Hub'
+    site.name = '$DOMAIN'
     site.save()
     
     print(f"Site updated successfully!")
@@ -464,7 +489,7 @@ except Site.DoesNotExist:
     site = Site.objects.create(
         id=1,
         domain='$DOMAIN',
-        name='DAW Macros Hub'
+        name='$DOMAIN'
     )
     print(f"Site created successfully!")
     print(f"  Domain: {site.domain}")
@@ -517,7 +542,7 @@ step_collect_static() {
             print_info "Created staticfiles directory"
         fi
         
-        "$VENV_DIR/bin/python" manage.py collectstatic --noinput
+        run_manage_py collectstatic --noinput
         print_success "Static files collected"
     else
         print_warning "Skipping static files collection"
@@ -626,7 +651,7 @@ server {
     listen 80;
     server_name $DOMAIN;
 
-    client_max_body_size 10M;
+    client_max_body_size ${CLIENT_MAX_BODY_SIZE};
 
     location /static/ {
         alias $PROJECT_DIR/staticfiles/;
@@ -932,7 +957,7 @@ step_create_superuser() {
     
     if confirm "Create Django superuser account"; then
         cd "$PROJECT_DIR"
-        "$VENV_DIR/bin/python" manage.py createsuperuser
+        run_manage_py createsuperuser
         print_success "Superuser creation completed"
     else
         print_info "Skipping superuser creation"

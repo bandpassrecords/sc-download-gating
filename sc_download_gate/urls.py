@@ -20,8 +20,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('favicon.ico', favicon_handler),  # Handle favicon requests
     path('.well-known/appspecific/com.chrome.devtools.json', chrome_devtools_handler),  # Handle Chrome DevTools requests
-    # SoundCloud OAuth callback (configure redirect_uri to point here if desired)
-    path('authorize', gates_views.soundcloud_callback),
+    # SoundCloud OAuth redirect URI endpoint
+    path('authorize', gates_views.authorize),
     path('', include('core.urls')),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),  # Allauth URLs (login, signup, etc.)

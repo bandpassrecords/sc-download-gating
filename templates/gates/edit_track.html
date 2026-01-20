@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Gate{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 860px;">
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h2 class="mb-1">Edit gate</h2>
+      <p class="text-muted mb-0">Change requirements and settings for this gate.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-primary" href="{% url 'gates:gate' track.public_id %}">
+        <i class="fas fa-external-link-alt"></i> View public gate
+      </a>
+      <a class="btn btn-outline-secondary" href="{% url 'gates:my_tracks' %}">Back</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      <div class="card-body">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Title</label>
+            {{ form.title }}
+            {% for e in form.title.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Description (optional)</label>
+            {{ form.description }}
+            {% for e in form.description.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Replace download file (optional)</label>
+            {{ form.download_file }}
+            <div class="form-text">
+              Leave blank to keep the current file.
+            </div>
+            {% for e in form.download_file.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Download filename (optional)</label>
+            {{ form.download_filename }}
+            {% for e in form.download_filename.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-4">
+            <div class="form-check">
+              {{ form.require_like }}
+              <label class="form-check-label">Require like</label>
+            </div>
+            {% for e in form.require_like.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-4">
+            <div class="form-check">
+              {{ form.require_comment }}
+              <label class="form-check-label">Require comment</label>
+            </div>
+            {% for e in form.require_comment.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-4">
+            <div class="form-check">
+              {{ form.require_follow }}
+              <label class="form-check-label">Require follow (artist profile)</label>
+            </div>
+            {% for e in form.require_follow.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-check">
+              {{ form.is_listed }}
+              <label class="form-check-label">List publicly on browse page</label>
+            </div>
+            {% for e in form.is_listed.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-check">
+              {{ form.is_active }}
+              <label class="form-check-label">Active</label>
+            </div>
+            {% for e in form.is_active.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer d-flex justify-content-end gap-2">
+        <button class="btn btn-primary" type="submit">
+          <i class="fas fa-save"></i> Save changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
