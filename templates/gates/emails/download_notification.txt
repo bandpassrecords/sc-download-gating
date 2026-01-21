@@ -1,0 +1,8 @@
+New download of your music on SoundCloud Download Gating by BandPass Records
+
+Congrats! Fans love your music!
+
+A fan just downloaded your title "{{ title }}" your download gate.
+
+Your total downloads for this title: {{ total_downloads }}
+
