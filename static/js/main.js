@@ -1,5 +1,5 @@
 /**
- * DAW Macros Hub - Modern JavaScript
+ * SoundCloud Download Gating By BandPass Records - Modern JavaScript
  * Enhanced interactions and UX improvements
  */
 
@@ -466,7 +466,7 @@
     }
     
     function init() {
-        console.log('DAW Macros Hub - Modern UI initialized');
+        console.log('SoundCloud Download Gating By BandPass Records - Modern UI initialized');
     }
 
 })();

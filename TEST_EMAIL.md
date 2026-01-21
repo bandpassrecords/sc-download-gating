@@ -15,7 +15,7 @@ from django.conf import settings
 
 # Test email
 send_mail(
-    subject='Test Email from DAW Macros Hub',
+    subject='Test Email from SoundCloud Download Gating By BandPass Records',
     message='This is a test email to verify email configuration is working.',
     from_email=settings.DEFAULT_FROM_EMAIL,
     recipient_list=['your-email@example.com'],  # Replace with your email
@@ -41,7 +41,7 @@ plain_message = strip_tags(html_message)
 
 # Send email
 send_mail(
-    subject='Test Verification Email - DAW Macros Hub',
+    subject='Test Verification Email - SoundCloud Download Gating By BandPass Records',
     message=plain_message,
     from_email=settings.DEFAULT_FROM_EMAIL,
     recipient_list=['your-email@example.com'],  # Replace with your email

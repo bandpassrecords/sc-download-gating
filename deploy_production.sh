@@ -502,7 +502,7 @@ EOF
         if [ $? -eq 0 ]; then
             print_success "Django Site configured"
             print_info "Site domain: $DOMAIN"
-            print_info "Site name: DAW Macros Hub"
+            print_info "Site name: SoundCloud Download Gating By BandPass Records"
         else
             print_error "Failed to configure Django Site"
             print_warning "You may need to configure it manually in Django admin or shell"
@@ -514,7 +514,7 @@ EOF
         echo "  from django.contrib.sites.models import Site"
         echo "  site = Site.objects.get(id=1)"
         echo "  site.domain = '$DOMAIN'"
-        echo "  site.name = 'DAW Macros Hub'"
+        echo "  site.name = 'SoundCloud Download Gating By BandPass Records'"
         echo "  site.save()"
     fi
 }

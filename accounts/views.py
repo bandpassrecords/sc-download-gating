@@ -18,7 +18,6 @@ import time
 from allauth.account.views import LoginView as AllauthLoginView
 from .forms import CustomUserCreationForm, UserProfileForm, UserUpdateForm, DeleteAccountForm, CustomPasswordResetForm
 from .models import UserProfile, EmailVerification
-from macros.models import Macro, MacroFavorite
 from gates.models import GatedTrack
 
 
@@ -418,7 +417,7 @@ def public_profile(request, slug):
     # Prevent access to deleted account profile
     if user.username == 'deleted_account' or user.email == 'deleted@system.local':
         messages.info(request, 'This account has been deleted.')
-        return redirect('macros:macro_list')
+        return redirect('core:home')
     
     tracks_qs = GatedTrack.objects.filter(
         owner=user,
@@ -470,68 +469,18 @@ def dashboard(request):
 @login_required
 def delete_account(request):
     """Delete user account view"""
-    # Get macro counts for display and form validation
-    total_macros = Macro.objects.filter(user=request.user).count()
-    public_macros_count = Macro.objects.filter(user=request.user, is_private=False).count()
-    private_macros_count = Macro.objects.filter(user=request.user, is_private=True).count()
-    
     if request.method == 'POST':
-        form = DeleteAccountForm(request.POST, private_macros_count=private_macros_count)
+        form = DeleteAccountForm(request.POST)
         if form.is_valid() and form.cleaned_data['confirm_delete']:
             user = request.user
-            delete_macros = form.cleaned_data.get('delete_macros', False)
-            private_macros_action = form.cleaned_data.get('private_macros_action', '')
             
             with transaction.atomic():
-                # Handle macros based on user's choice
-                if delete_macros:
-                    # User explicitly wants to delete all macros
-                    Macro.objects.filter(user=user).delete()
-                    messages.success(request, f'Your account and {total_macros} macro(s) have been permanently deleted.')
-                else:
-                    # User wants to preserve macros (at least public ones)
-                    deleted_user = get_deleted_user()
-                    
-                    if private_macros_action == 'make_public':
-                        # Make private macros public and reassign all to deleted user
-                        Macro.objects.filter(user=user, is_private=True).update(is_private=False)
-                        Macro.objects.filter(user=user).update(user=deleted_user)
-                        messages.success(
-                            request, 
-                            f'Your account has been deleted. {private_macros_count} private macro(s) have been made public, '
-                            f'and all {total_macros} macro(s) have been preserved and are now attributed to "Deleted Account".'
-                        )
-                    elif private_macros_action == 'delete_private':
-                        # Delete only private macros, preserve public ones
-                        Macro.objects.filter(user=user, is_private=True).delete()
-                        if public_macros_count > 0:
-                            Macro.objects.filter(user=user).update(user=deleted_user)
-                            messages.success(
-                                request,
-                                f'Your account has been deleted. {private_macros_count} private macro(s) have been deleted. '
-                                f'{public_macros_count} public macro(s) have been preserved and are now attributed to "Deleted Account".'
-                            )
-                        else:
-                            messages.success(
-                                request,
-                                f'Your account has been deleted. {private_macros_count} private macro(s) have been deleted.'
-                            )
-                    else:
-                        # Fallback: preserve all macros (shouldn't happen due to form validation)
-                        if total_macros > 0:
-                            Macro.objects.filter(user=user).update(user=deleted_user)
-                            messages.success(
-                                request,
-                                f'Your account has been deleted. {total_macros} macro(s) have been preserved and are now attributed to "Deleted Account".'
-                            )
-                        else:
-                            messages.success(request, 'Your account has been deleted.')
+                messages.success(request, 'Your account has been deleted.')
                 
                 # Logout before deleting user
                 logout(request)
                 
-                # Delete user (this will cascade delete UserProfile, votes, favorites, collections, downloads)
-                # Macros have already been reassigned or deleted above
+                # Delete user (this will cascade delete UserProfile and owned gates)
                 user.delete()
                 
                 return redirect('core:home')
@@ -543,13 +492,7 @@ def delete_account(request):
             else:
                 messages.error(request, 'Please confirm that you understand this action cannot be undone.')
     else:
-        form = DeleteAccountForm(private_macros_count=private_macros_count)
+        form = DeleteAccountForm()
     
-    context = {
-        'form': form,
-        'macro_count': total_macros,
-        'public_macros_count': public_macros_count,
-        'private_macros_count': private_macros_count,
-    }
-    
+    context = {'form': form}
     return render(request, 'accounts/delete_account.html', context)

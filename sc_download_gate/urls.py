@@ -26,7 +26,6 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),  # Allauth URLs (login, signup, etc.)
     path('g/', include('gates.urls')),
-    path('macros/', include('macros.urls')),
 ]
 
 # Serve media files during development

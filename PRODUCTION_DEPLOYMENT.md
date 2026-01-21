@@ -101,7 +101,7 @@ python3 manage.py createsuperuser
 2. Navigate to Sites > Sites
 3. Update the default site:
    - Domain name: `dmh.bandpassrecords.com`
-   - Display name: `DAW Macros Hub`
+   - Display name: `SoundCloud Download Gating By BandPass Records`
 
 ### 5. Test the Application
 
@@ -155,7 +155,7 @@ Visit your site and test:
    b. **Add service configuration:**
       ```ini
       [Unit]
-      Description=Gunicorn daemon for DAW Macros Hub Django application
+      Description=Gunicorn daemon for SoundCloud Download Gating By BandPass Records Django application
       After=network.target
 
       [Service]

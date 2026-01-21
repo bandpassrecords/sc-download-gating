@@ -48,7 +48,7 @@ Edit `/etc/systemd/system/daw-macros-hub.service` and update:
 **Example configuration:**
 ```ini
 [Unit]
-Description=Gunicorn daemon for DAW Macros Hub Django application
+Description=Gunicorn daemon for SoundCloud Download Gating By BandPass Records Django application
 After=network.target
 
 [Service]
@@ -104,7 +104,7 @@ sudo systemctl status daw-macros-hub.service
 
 You should see:
 ```
-● daw-macros-hub.service - Gunicorn daemon for DAW Macros Hub Django application
+● daw-macros-hub.service - Gunicorn daemon for SoundCloud Download Gating By BandPass Records Django application
      Loaded: loaded (/etc/systemd/system/daw-macros-hub.service; enabled; vendor preset: enabled)
      Active: active (running) since ...
 ```
@@ -363,7 +363,7 @@ Then add to crontab:
 
 ```ini
 [Unit]
-Description=Gunicorn daemon for DAW Macros Hub Django application
+Description=Gunicorn daemon for SoundCloud Download Gating By BandPass Records Django application
 After=network.target postgresql.service
 Wants=network-online.target
 

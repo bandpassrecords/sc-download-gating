@@ -111,23 +111,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class DeleteAccountForm(forms.Form):
-    """Form for account deletion with option to delete macros"""
-    delete_macros = forms.BooleanField(
-        required=False,
-        label="I want to delete all my uploaded macros",
-        help_text="If checked, you explicitly confirm you want to delete all your macros."
-    )
-    private_macros_action = forms.ChoiceField(
-        required=False,
-        choices=[
-            ('', '-- Select an option --'),
-            ('make_public', 'Make private macros public'),
-            ('delete_private', 'Delete only private macros'),
-        ],
-        label="What should happen to your private macros?",
-        help_text="This option only applies if you don't check 'delete all macros'. Public macros will be preserved and attributed to 'Deleted Account'.",
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
+    """Form for account deletion confirmation"""
     confirm_delete = forms.BooleanField(
         required=True,
         label="I understand this action cannot be undone",
@@ -135,24 +119,11 @@ class DeleteAccountForm(forms.Form):
     )
     
     def __init__(self, *args, **kwargs):
-        """Initialize form with private_macros_count to conditionally validate"""
-        self.private_macros_count = kwargs.pop('private_macros_count', 0)
+        """Initialize form"""
         super().__init__(*args, **kwargs)
     
     def clean(self):
-        cleaned_data = super().clean()
-        delete_macros = cleaned_data.get('delete_macros', False)
-        private_macros_action = cleaned_data.get('private_macros_action', '')
-        
-        # Only require private_macros_action if:
-        # 1. delete_macros is not checked AND
-        # 2. There are actually private macros to handle
-        if not delete_macros and self.private_macros_count > 0 and not private_macros_action:
-            raise forms.ValidationError(
-                "Please select what should happen to your private macros, or check the box to delete all macros."
-            )
-        
-        return cleaned_data
+        return super().clean()
 
 
 class UserProfileForm(forms.ModelForm):

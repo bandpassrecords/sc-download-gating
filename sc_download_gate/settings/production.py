@@ -72,7 +72,7 @@ EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 # Email address (can be overridden with display name format: "Display Name <email@example.com>")
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=f'{APP_DISPLAY_NAME} <dmh@bandpassrecords.com>')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=f'{APP_DISPLAY_NAME} <download@bandpassrecords.com>')
 SERVER_EMAIL = config('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
 
 
