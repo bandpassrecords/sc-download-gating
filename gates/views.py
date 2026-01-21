@@ -937,7 +937,12 @@ def download(request, public_id: str):
     # Notify gate owner (best-effort; never block the download).
     try:
         owner_email = (getattr(track.owner, "email", "") or "").strip()
-        if owner_email:
+        owner_profile = getattr(track.owner, "profile", None)
+        profile_allows = True
+        if owner_profile is not None and hasattr(owner_profile, "notify_on_downloads"):
+            profile_allows = bool(getattr(owner_profile, "notify_on_downloads"))
+
+        if owner_email and profile_allows and bool(getattr(track, "notify_on_downloads", True)):
             # Refresh track to get latest download_count.
             track.refresh_from_db(fields=["download_count", "title"])
 

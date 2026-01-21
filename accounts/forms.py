@@ -133,18 +133,21 @@ class UserProfileForm(forms.ModelForm):
         model = UserProfile
         fields = [
             'bio', 'avatar',
-            'show_email', 'show_real_name'
+            'show_email', 'show_real_name',
+            'notify_on_downloads',
         ]
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 4, 'class': 'form-control', 'placeholder': 'Tell us about yourself...'}),
             'avatar': forms.FileInput(attrs={'class': 'form-control-file'}),
             'show_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'show_real_name': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'notify_on_downloads': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         help_texts = {
             'bio': 'Brief description about yourself and your music production background.',
             'show_email': 'Allow other users to see your email address.',
             'show_real_name': 'Display your real name (first name + surname) instead of the generated fake name. Only works if you have both first name and surname set.',
+            'notify_on_downloads': 'Email me when someone downloads a file from one of my gates. If disabled, gate-level email settings will be ignored.',
         }
     
     def __init__(self, *args, **kwargs):

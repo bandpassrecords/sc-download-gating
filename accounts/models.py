@@ -22,6 +22,13 @@ class UserProfile(models.Model):
     # Privacy settings
     show_email = models.BooleanField(default=False)
     show_real_name = models.BooleanField(default=False)  # Default to False to use fake name for privacy
+
+    # Notifications
+    # If disabled, this overrides any per-gate email notification setting.
+    notify_on_downloads = models.BooleanField(
+        default=True,
+        help_text="Send me an email when someone downloads a file from one of my gates.",
+    )
     
     # Stats
     total_uploads = models.PositiveIntegerField(default=0)

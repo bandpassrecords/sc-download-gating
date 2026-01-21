@@ -49,6 +49,10 @@ class GatedTrack(models.Model):
     )
 
     is_active = models.BooleanField(default=True)
+    notify_on_downloads = models.BooleanField(
+        default=True,
+        help_text="Send an email notification to the gate owner when someone downloads.",
+    )
 
     download_count = models.PositiveIntegerField(default=0)
 

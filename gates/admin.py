@@ -10,12 +10,13 @@ class GatedTrackAdmin(admin.ModelAdmin):
         "owner",
         "title",
         "is_active",
+        "notify_on_downloads",
         "require_like",
         "require_comment",
         "download_count",
         "created_at",
     )
-    list_filter = ("is_active", "require_like", "require_comment", "created_at")
+    list_filter = ("is_active", "notify_on_downloads", "require_like", "require_comment", "created_at")
     search_fields = ("public_id", "title", "soundcloud_track_url", "soundcloud_track_urn", "owner__email")
     readonly_fields = ("public_id", "created_at", "updated_at", "download_count")
 

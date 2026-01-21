@@ -189,6 +189,21 @@
                                         </div>
                                     {% endif %}
                                 </div>
+
+                                <div class="form-check mb-3">
+                                    {{ profile_form.notify_on_downloads }}
+                                    <label class="form-check-label" for="{{ profile_form.notify_on_downloads.id_for_label }}">
+                                        Email me when someone downloads from my gates
+                                    </label>
+                                    {% if profile_form.notify_on_downloads.help_text %}
+                                        <div class="form-text">{{ profile_form.notify_on_downloads.help_text }}</div>
+                                    {% endif %}
+                                    {% if profile_form.notify_on_downloads.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ profile_form.notify_on_downloads.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                             
                             <div class="col-md-6">

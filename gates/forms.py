@@ -58,6 +58,7 @@ class GatedTrackCreateForm(forms.ModelForm):
             "require_follow",
             "download_filename",
             "is_active",
+            "notify_on_downloads",
         )
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
@@ -135,6 +136,7 @@ class GatedTrackUpdateForm(forms.ModelForm):
             "require_follow",
             "download_filename",
             "is_active",
+            "notify_on_downloads",
         )
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
