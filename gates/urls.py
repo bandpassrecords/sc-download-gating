@@ -5,7 +5,6 @@ from . import views
 app_name = "gates"
 
 urlpatterns = [
-    path("", views.browse, name="browse"),
     path("my/", views.my_tracks, name="my_tracks"),
     path("new/", views.create_track, name="create_track"),
     path("t/<str:public_id>/edit/", views.edit_track, name="edit_track"),

@@ -33,7 +33,6 @@ class Migration(migrations.Migration):
                 ('download_file', models.FileField(blank=True, upload_to='gated_downloads/%Y/%m/%d/')),
                 ('download_filename', models.CharField(blank=True, help_text='Optional filename to use for the downloaded file.', max_length=255)),
                 ('is_active', models.BooleanField(default=True)),
-                ('is_listed', models.BooleanField(default=False, help_text='If enabled, this gate appears on public browse pages.')),
                 ('download_count', models.PositiveIntegerField(default=0)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),

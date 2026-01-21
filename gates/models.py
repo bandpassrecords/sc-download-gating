@@ -49,10 +49,6 @@ class GatedTrack(models.Model):
     )
 
     is_active = models.BooleanField(default=True)
-    is_listed = models.BooleanField(
-        default=False,
-        help_text="If enabled, this gate appears on public browse pages.",
-    )
 
     download_count = models.PositiveIntegerField(default=0)
 

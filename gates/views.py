@@ -85,11 +85,6 @@ def _get_soundcloud_redirect_uri(request) -> str:
     return request.build_absolute_uri(reverse("gates:soundcloud_callback"))
 
 
-def browse(request):
-    tracks = GatedTrack.objects.filter(is_active=True, is_listed=True).select_related("owner")[:48]
-    return render(request, "gates/browse.html", {"tracks": tracks})
-
-
 @login_required
 def my_tracks(request):
     tracks = GatedTrack.objects.filter(owner=request.user).order_by("-created_at")

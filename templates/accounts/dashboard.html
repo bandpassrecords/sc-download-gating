@@ -33,15 +33,6 @@
     <div class="col-md-4 col-12">
       <div class="stat-card">
         <div class="text-center">
-          <i class="fas fa-globe fa-2x mb-3" style="color: var(--success);"></i>
-          <div class="stat-number" style="color: #10b981;">{{ total_listed }}</div>
-          <div class="stat-label">Listed (public)</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 col-12">
-      <div class="stat-card">
-        <div class="text-center">
           <i class="fas fa-download fa-2x mb-3" style="color: var(--warning);"></i>
           <div class="stat-number" style="color: #f59e0b;">{{ total_downloads }}</div>
           <div class="stat-label">Total downloads</div>
@@ -73,7 +64,6 @@
                   <div class="d-flex justify-content-between align-items-center">
                     <small class="text-muted">
                       {% if t.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Inactive</span>{% endif %}
-                      {% if t.is_listed %}<span class="badge bg-info ms-1">Listed</span>{% else %}<span class="badge bg-secondary ms-1">Unlisted</span>{% endif %}
                     </small>
                     <small class="text-muted">{{ t.created_at|timesince }} ago</small>
                   </div>

@@ -409,36 +409,6 @@ def edit_profile(request):
     return render(request, 'accounts/edit_profile.html', context)
 
 
-def public_profile(request, slug):
-    """View public profile of a user - shows only listed gates. slug is public_id"""
-    user_profile = get_object_or_404(UserProfile, public_id=slug)
-    user = user_profile.user
-    
-    # Prevent access to deleted account profile
-    if user.username == 'deleted_account' or user.email == 'deleted@system.local':
-        messages.info(request, 'This account has been deleted.')
-        return redirect('core:home')
-    
-    tracks_qs = GatedTrack.objects.filter(
-        owner=user,
-        is_active=True,
-        is_listed=True,
-    ).order_by("-created_at")
-    paginator = Paginator(tracks_qs, 24)
-    page_number = request.GET.get("page", 1)
-    tracks = paginator.get_page(page_number)
-    
-    context = {
-        'profile_user': user,
-        'profile': user_profile,
-        'tracks': tracks,
-        'total_gates': paginator.count,
-        'is_own_profile': request.user == user,
-    }
-    
-    return render(request, 'accounts/public_profile.html', context)
-
-
 @login_required
 def dashboard(request):
     """User dashboard with overview"""
@@ -449,7 +419,6 @@ def dashboard(request):
     popular_tracks = tracks_qs.order_by("-download_count", "-created_at")[:5]
 
     total_gates = tracks_qs.count()
-    total_listed = tracks_qs.filter(is_active=True, is_listed=True).count()
     total_downloads = (
         tracks_qs.aggregate(total=models.Sum("download_count")).get("total") or 0
     )
@@ -459,7 +428,6 @@ def dashboard(request):
         "recent_tracks": recent_tracks,
         "popular_tracks": popular_tracks,
         "total_gates": total_gates,
-        "total_listed": total_listed,
         "total_downloads": total_downloads,
     }
 

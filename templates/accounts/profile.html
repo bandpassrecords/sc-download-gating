@@ -88,7 +88,6 @@
             </h5>
             <div class="d-flex flex-wrap gap-2 mb-3">
               {% if t.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Inactive</span>{% endif %}
-              {% if t.is_listed %}<span class="badge bg-info">Listed</span>{% else %}<span class="badge bg-secondary">Unlisted</span>{% endif %}
               {% if t.require_like %}<span class="badge bg-secondary">Like</span>{% endif %}
               {% if t.require_comment %}<span class="badge bg-secondary">Comment</span>{% endif %}
             </div>

@@ -7,13 +7,9 @@ from accounts.models import UserProfile
 def home(request):
     """Homepage with featured content"""
     
-    featured_tracks = GatedTrack.objects.filter(is_active=True, is_listed=True).select_related(
-        "owner"
-    ).order_by("-download_count", "-created_at")[:8]
-
-    recent_tracks = GatedTrack.objects.filter(is_active=True, is_listed=True).select_related(
-        "owner"
-    ).order_by("-created_at")[:6]
+    # Gates are intentionally not publicly discoverable. The homepage should not list gates.
+    featured_tracks = []
+    recent_tracks = []
 
     stats = {
         "total_gates": GatedTrack.objects.filter(is_active=True).count(),

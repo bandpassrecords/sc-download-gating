@@ -24,7 +24,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-t^6zgheq3rvc&k82xos5+
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 
 # App branding
-APP_NAME = config('APP_NAME', default='sc_download_gating')
+APP_NAME = config('APP_NAME', default='SoundCloud Download Gating')
 APP_DISPLAY_NAME = config('APP_DISPLAY_NAME', default=APP_NAME)
 
 

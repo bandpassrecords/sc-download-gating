@@ -57,7 +57,6 @@ class GatedTrackCreateForm(forms.ModelForm):
             "require_comment",
             "require_follow",
             "download_filename",
-            "is_listed",
             "is_active",
         )
         widgets = {
@@ -135,7 +134,6 @@ class GatedTrackUpdateForm(forms.ModelForm):
             "require_comment",
             "require_follow",
             "download_filename",
-            "is_listed",
             "is_active",
         )
         widgets = {

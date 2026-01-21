@@ -93,14 +93,6 @@
 
           <div class="col-md-6">
             <div class="form-check">
-              {{ form.is_listed }}
-              <label class="form-check-label">List publicly on browse page</label>
-            </div>
-            {% for e in form.is_listed.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
-          </div>
-
-          <div class="col-md-6">
-            <div class="form-check">
               {{ form.is_active }}
               <label class="form-check-label">Active</label>
             </div>
