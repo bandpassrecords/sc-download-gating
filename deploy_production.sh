@@ -6,7 +6,7 @@
 #
 # NOTE:
 # This script is designed to deploy alongside other apps already running
-# on the server (e.g. daw-cubase / daw-macros-hub) by using:
+# on the server (e.g. sc-download-gating) by using:
 # - a dedicated systemd service name
 # - a dedicated RuntimeDirectory/socket path
 # - dedicated gunicorn log files
