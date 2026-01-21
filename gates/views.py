@@ -1,4 +1,5 @@
 import secrets
+import logging
 from typing import Optional
 
 from django.contrib import messages
@@ -35,6 +36,9 @@ from .soundcloud import (
     user_follows_user,
     user_liked_track,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def _safe_upload_basename(name: str) -> str:
@@ -961,7 +965,7 @@ def download(request, public_id: str):
                 fail_silently=False,
             )
     except Exception:
-        pass
+        logger.exception("Failed to send download notification email for track=%s", track.public_id)
 
     # Clear SoundCloud access token after download (we only need it for verification + actions).
     for k in ("soundcloud_access_token", "soundcloud_expires_at"):

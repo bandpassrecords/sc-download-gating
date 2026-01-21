@@ -190,7 +190,9 @@ SITE_ID = 1  # Required for allauth
 # Allauth Account Settings
 ACCOUNT_AUTHENTICATION_METHOD = 'email'  # Use email only for authentication
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'optional'  # 'mandatory', 'optional', or 'none'
+# We use our own email verification flow in accounts/views.py (EmailVerification model).
+# Disable allauth email verification to avoid duplicate verification emails.
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # 'mandatory', 'optional', or 'none'
 ACCOUNT_USERNAME_REQUIRED = False  # Username not required
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # Don't use username field
 ACCOUNT_UNIQUE_EMAIL = True
@@ -203,7 +205,7 @@ SOCIALACCOUNT_ADAPTER = 'accounts.adapters.CustomSocialAccountAdapter'  # Custom
 # Social Account Settings
 SOCIALACCOUNT_AUTO_SIGNUP = True  # Automatically create account on social login
 SOCIALACCOUNT_EMAIL_REQUIRED = True
-SOCIALACCOUNT_EMAIL_VERIFICATION = 'optional'
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_QUERY_EMAIL = True  # Request email from provider
 
 # Google OAuth Settings
