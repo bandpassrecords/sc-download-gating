@@ -96,7 +96,14 @@
             </div>
             <div class="d-flex justify-content-between align-items-center">
               <small class="text-muted"><i class="fas fa-download"></i> {{ t.download_count }}</small>
-              <a class="btn btn-sm btn-primary" href="{% url 'gates:gate' t.public_id %}">Open</a>
+              <div class="d-flex gap-2">
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'gates:edit_track' t.public_id %}">
+                  Edit
+                </a>
+                <a class="btn btn-sm btn-primary" href="{% url 'gates:gate' t.public_id %}">
+                  Open
+                </a>
+              </div>
             </div>
           </div>
         </div>
